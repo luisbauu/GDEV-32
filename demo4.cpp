@@ -26,10 +26,10 @@ GLFWwindow *pWindow;
 float vertices[] =
 {
     // position (x, y, z)    color (r, g, b)    texture coordinates (s, t)
-    -0.20f, -0.20f,  1.00f,  1.0f, 1.0f, 1.0f,  0.0f, 0.0f,
-     0.20f, -0.20f,  1.00f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f,
-    -0.20f,  0.20f,  1.00f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f,
-     0.20f,  0.20f,  1.00f,  1.0f, 1.0f, 1.0f,  1.0f, 1.0f
+    -0.50f, -0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  0.0f, 0.0f,
+     0.50f, -0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f,
+    -0.50f,  0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f,
+     0.50f,  0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  1.0f, 1.0f
 };
 
 struct camera
@@ -116,9 +116,13 @@ bool setup()
     if (! shader)
         return false;
 
-    // load our texture
+    // load our textures
     texture = gdevLoadTexture("demo4.png", GL_REPEAT, true, true);
     if (! texture)
+        return false;
+
+    grass = gdevLoadTexture("grass.png", GL_REPEAT, true, true);
+    if (! grass)
         return false;
 
     // enable OpenGL blending so that texels with alpha values less than one are drawn transparent
@@ -154,12 +158,6 @@ void render()
         cam.position += (float) elapsedTime *
         glm::normalize(glm::cross(cam.front, cam.up));
     }
-    // // basic trigonometry to determine a new front direction
-    // glm::vec3 direction;
-    // direction.x = cos(glm::radians(cam.yaw));
-    // direction.z = sin(glm::radians(cam.yaw));
-    // // actually set the new front direction
-    // cam.front = glm::normalize(direction);
     
     if (scaling < 0.1f)
         scaling = 0.1f;  // don't let the object scale all the way down to zero or negative
