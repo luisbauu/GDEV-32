@@ -50,6 +50,7 @@ GLuint indices[] =
     1, 3, 2
 };
 
+
 // define OpenGL object IDs to represent the vertex array, shader program, and texture in the GPU
 GLuint vao;         // vertex array object (stores the render state for our vertex array)
 GLuint vbo;         // vertex buffer object (reserves GPU memory for our vertex array)
@@ -66,6 +67,12 @@ double previousTime = 0.0;
 
 camera cam;
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+bool firstMouse = true;
+float yaw = cam.yaw;
+float pitch = 0.0f;
+float lastX = WINDOW_WIDTH/2;
+float lastY = WINDOW_HEIGHT/2;
 
 // called by the main function to do initial setup, such as uploading vertex
 // arrays, shader programs, etc.; returns true if successful, false otherwise
@@ -147,18 +154,12 @@ void render()
         cam.position += (float) elapsedTime *
         glm::normalize(glm::cross(cam.front, cam.up));
     }
-    // implementing the yaw rotation
-    float scaleFactor = 50.0f;
-    if (glfwGetKey(pWindow, GLFW_KEY_LEFT) == GLFW_PRESS)
-        cam.yaw -= elapsedTime * scaleFactor;
-    if (glfwGetKey(pWindow, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        cam.yaw += elapsedTime * scaleFactor;
-    // basic trigonometry to determine a new front direction
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(cam.yaw));
-    direction.z = sin(glm::radians(cam.yaw));
-    // actually set the new front direction
-    cam.front = glm::normalize(direction);
+    // // basic trigonometry to determine a new front direction
+    // glm::vec3 direction;
+    // direction.x = cos(glm::radians(cam.yaw));
+    // direction.z = sin(glm::radians(cam.yaw));
+    // // actually set the new front direction
+    // cam.front = glm::normalize(direction);
     
     if (scaling < 0.1f)
         scaling = 0.1f;  // don't let the object scale all the way down to zero or negative
@@ -222,6 +223,38 @@ void handleResize(GLFWwindow* pWindow, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos){
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+  
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; 
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw   += xoffset;
+    pitch += yoffset;
+
+    if(pitch > 89.0f)
+        pitch = 89.0f;
+    if(pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cam.front = glm::normalize(direction);
+};
+
 // main function
 int main(int argc, char** argv)
 {
@@ -254,6 +287,8 @@ int main(int argc, char** argv)
 
     // don't miss any momentary keypresses
     glfwSetInputMode(pWindow, GLFW_STICKY_KEYS, GLFW_TRUE);
+    glfwSetInputMode(pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(pWindow, mouse_callback); 
 
     // initialize GLAD, which acts as a library loader for the current OS's native OpenGL library
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
