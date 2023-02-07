@@ -22,16 +22,6 @@
 #define WINDOW_TITLE  "Hello Transform (use WASD and arrow keys)"
 GLFWwindow *pWindow;
 
-// define a vertex array to hold our vertices
-float vertices[] =
-{
-    // position (x, y, z)    color (r, g, b)    texture coordinates (s, t)
-    -0.50f, -0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  0.0f, 0.0f,
-     0.50f, -0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f,
-    -0.50f,  0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f,
-     0.50f,  0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  1.0f, 1.0f
-};
-
 struct camera
 {
     // position is where your eye is
@@ -43,6 +33,16 @@ struct camera
     float yaw = -90.0f; // manipulates the front vector
 };
 
+// define a vertex array to hold our vertices
+float vertices[] =
+{
+    // position (x, y, z)    color (r, g, b)    texture coordinates (s, t)
+    -0.50f, -0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  0.0f, 0.0f,
+     0.50f, -0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f,
+    -0.50f,  0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f,
+     0.50f,  0.50f,  1.00f,  1.0f, 1.0f, 1.0f,  1.0f, 1.0f
+};
+
 // define the triangles as triplets of indices into the vertex array
 GLuint indices[] =
 {
@@ -50,13 +50,44 @@ GLuint indices[] =
     1, 3, 2
 };
 
+float planeVertices[] = 
+{
+    // position (x, y, z)    color (r, g, b)    texture coordinates (s, t)
+    -5.00f, 0.0f, -5.00f,  1.0f, 1.0f, 1.0f,  0.0f, 0.0f,
+     5.00f, 0.0f, -5.00f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f,
+    -5.00f, 0.0f,  5.00f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f,
+     5.00f, 0.0f,  5.00f,  1.0f, 1.0f, 1.0f,  1.0f, 1.0f
+
+};
+
+GLuint planeIndices[] =
+{
+    0, 1, 2,
+    1, 3, 2,
+};
+
+float tetrahedronVertices[] = {
+    4.00f, 0.0f, 4.00f,  1.0f, 1.0f, 1.0f,  0.0f, 0.0f,
+    0.00f, 0.0f, 4.00f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f,
+    2.00f, 0.0f, 0.00f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f,
+    2.00f, 4.0f, 2.00f,  1.0f, 1.0f, 1.0f,  1.0f, 1.0f,
+};
+
+GLuint tetrahedronIndices[] = {
+    0, 1, 3,
+    0, 2, 3,
+    1, 2, 3,
+    0, 1, 2,
+};
+
+
 
 // define OpenGL object IDs to represent the vertex array, shader program, and texture in the GPU
 GLuint vao;         // vertex array object (stores the render state for our vertex array)
 GLuint vbo;         // vertex buffer object (reserves GPU memory for our vertex array)
 GLuint ebo;         // element buffer object (stores the indices of the vertices to form triangles)
 GLuint shader;      // combined vertex and fragment shader
-GLuint texture;     // texture object
+GLuint texture, grass;     // texture object
 
 // variables controlling the object's position, rotation, and scaling
 float  x            = 0.0f;
@@ -88,11 +119,11 @@ bool setup()
 
     // upload our vertex array data to the newly-created VBO
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(tetrahedronVertices), tetrahedronVertices, GL_STATIC_DRAW);
 
     // upload our index array data to the newly-created EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tetrahedronIndices), tetrahedronIndices, GL_STATIC_DRAW);
 
     // on the VAO, register the current VBO with the following vertex attribute layout:
     // - the stride length of the vertex array is 8 floats (8 * sizeof(float))
@@ -129,6 +160,9 @@ bool setup()
     // (you can omit these lines if you don't use alpha)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_DEPTH_TEST);
+
 
     return true;
 }
@@ -201,7 +235,7 @@ void render()
 
     // ... then draw our triangles
     glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, sizeof(tetrahedronIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
 
 /*****************************************************************************/
