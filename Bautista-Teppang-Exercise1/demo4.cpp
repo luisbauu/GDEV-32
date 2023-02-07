@@ -19,7 +19,7 @@
 // change this to your desired window attributes
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 360
-#define WINDOW_TITLE  "Hello Transform (use WASD and arrow keys)"
+#define WINDOW_TITLE  "Exercise1"
 GLFWwindow *pWindow;
 
 struct camera
