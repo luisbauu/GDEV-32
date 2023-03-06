@@ -14,6 +14,11 @@ in vec3 shaderPosition;
 in vec3 shaderNormal;
 in vec2 shaderTexCoord;
 in vec3 shaderLightPosition;
+in vec3 shaderLightPosition2;
+
+uniform float uniformAmbientIntensity;
+uniform float uniformSpecularIntensity;
+uniform float uniformSpecularPower;
 uniform sampler2D diffuseMap;
 out vec4 fragmentColor;
 
@@ -22,9 +27,9 @@ void main()
     // define some constant properties for the light
     // (you should really be passing these parameters into the shader as uniform vars instead)
     vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);  // diffuse
-    float ambientIntensity = 0.15f;            // ambient
-    float specularIntensity = 0.5f;            // specular (better implementation: look this up from a specular map!)
-    float specularPower = 32.0f;               // specular exponent
+    float ambientIntensity = 0.15f + uniformAmbientIntensity;            // ambient
+    float specularIntensity = 0.5f + uniformSpecularIntensity;            // specular (better implementation: look this up from a specular map!)
+    float specularPower = 32.0f + uniformSpecularPower;               // specular exponent
 
     // normalize the interpolated normal from the vertex shader
     // (lighting calculations will break if the normal direction is not a unit vector)

@@ -20,15 +20,14 @@
 // change this to your desired window attributes
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 360
-#define WINDOW_TITLE  "Hello Lighting (use WASDQE keys for camera, IKJLUO keys for light)"
+#define WINDOW_TITLE  "Exercise2 (use WASDQE keys for camera, IKJLUO keys for light)"
 GLFWwindow *pWindow;
+int current = 0;
 
 // model
 float vertices[] =
 {
-    
     // position (x, y, z)    normal (x, y, z)     texture coordinates (s, t)
-
     // ground plane
     -8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
      8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  4.0f, 0.0f,
@@ -36,60 +35,13 @@ float vertices[] =
     -8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
      8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  4.0f, 4.0f,
     -8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  0.0f, 4.0f,
-
-    // cube top
-    -1.00f,  1.00f,  1.00f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-     1.00f,  1.00f,  1.00f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-     1.00f,  1.00f, -1.00f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-    -1.00f,  1.00f,  1.00f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-     1.00f,  1.00f, -1.00f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-    -1.00f,  1.00f, -1.00f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-
-    // cube bottom
-    -1.00f, -1.00f, -1.00f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-     1.00f, -1.00f, -1.00f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-     1.00f, -1.00f,  1.00f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-    -1.00f, -1.00f, -1.00f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-     1.00f, -1.00f,  1.00f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-    -1.00f, -1.00f,  1.00f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-    // cube front
-    -1.00f, -1.00f,  1.00f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
-     1.00f, -1.00f,  1.00f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
-     1.00f,  1.00f,  1.00f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
-    -1.00f, -1.00f,  1.00f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
-     1.00f,  1.00f,  1.00f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
-    -1.00f,  1.00f,  1.00f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
-
-    // cube back
-     1.00f, -1.00f, -1.00f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-    -1.00f, -1.00f, -1.00f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-    -1.00f,  1.00f, -1.00f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-     1.00f, -1.00f, -1.00f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-    -1.00f,  1.00f, -1.00f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-     1.00f,  1.00f, -1.00f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-
-    // cube right
-     1.00f, -1.00f,  1.00f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-     1.00f, -1.00f, -1.00f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-     1.00f,  1.00f, -1.00f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-     1.00f, -1.00f,  1.00f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-     1.00f,  1.00f, -1.00f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-     1.00f,  1.00f,  1.00f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-
-    // cube left
-    -1.00f, -1.00f, -1.00f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-    -1.00f, -1.00f,  1.00f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    -1.00f,  1.00f,  1.00f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-    -1.00f, -1.00f, -1.00f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-    -1.00f,  1.00f,  1.00f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-    -1.00f,  1.00f, -1.00f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f
 };
 
 // OpenGL object IDs
-GLuint vao;
-GLuint vbo;
-GLuint shader;
+GLuint vao, vao2;         // vertex array object (stores the render state for our vertex array)
+GLuint vbo, vbo2;         // vertex buffer object (reserves GPU memory for our vertex array)
+GLuint ebo, ebo2; 
+GLuint shader, shader2;
 GLuint texture, grass;
 
 // helper struct for defining spherical polar coordinates
@@ -132,6 +84,11 @@ struct polar
 // variables for tracking camera and light position
 polar camera;
 glm::vec3 lightPosition = glm::vec3(-5.0f, 3.0f, 5.0f);
+glm::vec3 lightPosition2 = glm::vec3(5.0f, 3.0f, -5.0f);
+
+float uniformAmbientIntensityValue = 0.0f;
+float uniformSpecularIntensityValue = 0.0f;
+float uniformSpecularPowerValue = 0.0f;
 double previousTime = 0.0;
 
 // called by the main function to do initial setup, such as uploading vertex
@@ -139,17 +96,43 @@ double previousTime = 0.0;
 bool setup()
 {
     // upload the model to the GPU (explanations omitted for brevity)
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
+    {
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+    }
+    // {
+    //      glGenVertexArrays(1, &vao2);
+    //     glGenBuffers(1, &vbo2);
+    //     glGenBuffers(1, &ebo2);
+
+    //     glBindVertexArray(vao2);
+
+    //     // upload our vertex array data to the newly-created VBO
+    //     glBindBuffer(GL_ARRAY_BUFFER, vbo2);
+    //     glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+
+    //     // upload our index array data to the newly-created EBO
+    //     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo2);
+    //     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), planeIndices, GL_STATIC_DRAW);
+
+    //     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+    //     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+    //     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+
+    //     // enable the layout locations so they can be used by the vertex shader
+    //     glEnableVertexAttribArray(0);
+    //     glEnableVertexAttribArray(1);
+    //     glEnableVertexAttribArray(2);
+    // }
 
     // load our shader program
     shader = gdevLoadShader("demo5.vs", "demo5.fs");
@@ -204,19 +187,53 @@ void render()
 
     // get a "forward" vector for controlling the light position
     glm::vec3 lightForward = glm::normalize(glm::vec3(-cameraPosition.x, 0.0f, -cameraPosition.z));
+    glm::vec3 lightForward2 = glm::normalize(glm::vec3(-cameraPosition.x, 0.0f, -cameraPosition.z));
 
-    if (glfwGetKey(pWindow, GLFW_KEY_I) == GLFW_PRESS)
-        lightPosition += lightForward * translationAmount;
-    if (glfwGetKey(pWindow, GLFW_KEY_K) == GLFW_PRESS)
-        lightPosition -= lightForward * translationAmount;
-    if (glfwGetKey(pWindow, GLFW_KEY_J) == GLFW_PRESS)
-        lightPosition -= glm::cross(lightForward, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
-    if (glfwGetKey(pWindow, GLFW_KEY_L) == GLFW_PRESS)
-        lightPosition += glm::cross(lightForward, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
-    if (glfwGetKey(pWindow, GLFW_KEY_U) == GLFW_PRESS)
-        lightPosition -= glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
-    if (glfwGetKey(pWindow, GLFW_KEY_O) == GLFW_PRESS)
-        lightPosition += glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
+
+    if (glfwGetKey(pWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+        current = (current + 1) % 2;  // switch between the two instances
+
+    if(current == 0){
+        if (glfwGetKey(pWindow, GLFW_KEY_I) == GLFW_PRESS)
+            lightPosition += lightForward * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_K) == GLFW_PRESS)
+            lightPosition -= lightForward * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_J) == GLFW_PRESS)
+            lightPosition -= glm::cross(lightForward, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_L) == GLFW_PRESS)
+            lightPosition += glm::cross(lightForward, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_U) == GLFW_PRESS)
+            lightPosition -= glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_O) == GLFW_PRESS)
+            lightPosition += glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_Z) == GLFW_PRESS)
+            uniformAmbientIntensityValue += 0.1f;
+        if (glfwGetKey(pWindow, GLFW_KEY_X) == GLFW_PRESS)
+            uniformAmbientIntensityValue -= 0.1f;
+        if (glfwGetKey(pWindow, GLFW_KEY_C) == GLFW_PRESS)
+            uniformSpecularIntensityValue += 0.1f;
+        if (glfwGetKey(pWindow, GLFW_KEY_V) == GLFW_PRESS)
+            uniformSpecularIntensityValue -= 0.1f;
+        if (glfwGetKey(pWindow, GLFW_KEY_B) == GLFW_PRESS)
+            uniformSpecularPowerValue += 1.0f;
+        if (glfwGetKey(pWindow, GLFW_KEY_N) == GLFW_PRESS)
+            uniformSpecularPowerValue -= 1.0f;
+        
+    }else{
+        if (glfwGetKey(pWindow, GLFW_KEY_I) == GLFW_PRESS)
+            lightPosition2 += lightForward2 * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_K) == GLFW_PRESS)
+            lightPosition2 -= lightForward2 * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_J) == GLFW_PRESS)
+            lightPosition2 -= glm::cross(lightForward2, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_L) == GLFW_PRESS)
+            lightPosition2 += glm::cross(lightForward2, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_U) == GLFW_PRESS)
+            lightPosition2 -= glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_O) == GLFW_PRESS)
+            lightPosition2 += glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
+    }
+   
 
     // clear the whole frame
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -224,6 +241,11 @@ void render()
 
     // using our shader program...
     glUseProgram(shader);
+
+
+    glUniform1f(glGetUniformLocation(shader, "uniformAmbientIntensity"), uniformAmbientIntensityValue);
+    glUniform1f(glGetUniformLocation(shader, "uniformSpecularIntensity"), uniformSpecularIntensityValue);
+    glUniform1f(glGetUniformLocation(shader, "uniformSpecularPower"), uniformSpecularPowerValue);
 
     // ... set up the projection matrix...
     glm::mat4 projectionTransform;
@@ -250,6 +272,10 @@ void render()
     // ... set up the light position...
     glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
                  1, glm::value_ptr(lightPosition));
+
+    // ... set up the light position2...
+    glUniform3fv(glGetUniformLocation(shader, "lightPosition2"),
+                 1, glm::value_ptr(lightPosition2));
 
     // ... set the active texture...
     glActiveTexture(GL_TEXTURE0);

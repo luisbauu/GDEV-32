@@ -119,7 +119,6 @@ bool setup()
         glGenBuffers(1, &vbo);
         glGenBuffers(1, &ebo);
 
-
         // bind the newly-created VAO to make it the current one that OpenGL will apply state changes to
         glBindVertexArray(vao);
 
