@@ -83,26 +83,13 @@ GLuint planeIndices[] =
     1, 3, 2,
 };
 
-float tetrahedronVertices[] = {
-    4.00f, 0.0f, 4.00f,  1.0f, 1.0f, 1.0f,  0.0f, 0.0f,
-    0.00f, 0.0f, 4.00f,  1.0f, 1.0f, 1.0f,  1.0f, 0.0f,
-    2.00f, 0.0f, 0.00f,  1.0f, 1.0f, 1.0f,  0.0f, 1.0f,
-    2.00f, 4.0f, 2.00f,  1.0f, 1.0f, 1.0f,  1.0f, 1.0f,
-};
-
-GLuint tetrahedronIndices[] = {
-    0, 1, 3,
-    0, 2, 3,
-    1, 2, 3,
-    0, 1, 2,
-};
 
 
 
 // define OpenGL object IDs to represent the vertex array, shader program, and texture in the GPU
-GLuint vao, vao2, vao3, vao4, vao5;         // vertex array object (stores the render state for our vertex array)
-GLuint vbo, vbo2, vbo3, vbo4, vbo5;         // vertex buffer object (reserves GPU memory for our vertex array)
-GLuint ebo, ebo2, ebo3, ebo4, ebo5;         // element buffer object (stores the indices of the vertices to form triangles)
+GLuint vao, vao2;         // vertex array object (stores the render state for our vertex array)
+GLuint vbo, vbo2;         // vertex buffer object (reserves GPU memory for our vertex array)
+GLuint ebo, ebo2;         // element buffer object (stores the indices of the vertices to form triangles)
 GLuint shader;      // combined vertex and fragment shader
 GLuint texture, grass, sad;     // texture object
 
@@ -127,136 +114,64 @@ float lastY = WINDOW_HEIGHT/2;
 bool setup()
 {
     {
-    // generate the VAO, VBO, and EBO objects and store their IDs in vao, vbo, and ebo, respectively
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
+        // generate the VAO, VBO, and EBO objects and store their IDs in vao, vbo, and ebo, respectively
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+        glGenBuffers(1, &ebo);
 
 
-    // bind the newly-created VAO to make it the current one that OpenGL will apply state changes to
-    glBindVertexArray(vao);
+        // bind the newly-created VAO to make it the current one that OpenGL will apply state changes to
+        glBindVertexArray(vao);
 
-    // upload our vertex array data to the newly-created VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+        // upload our vertex array data to the newly-created VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
 
-    // upload our index array data to the newly-created EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
-
-
-    // on the VAO, register the current VBO with the following vertex attribute layout:
-    // - the stride length of the vertex array is 8 floats (8 * sizeof(float))
-    // - layout location 0 (position) is 3 floats and starts at the first float of the vertex array (offset 0)
-    // - layout location 1 (color) is also 3 floats but starts at the fourth float (offset 3 * sizeof(float))
-    // - layout location 2 (texcoord) is 2 floats and starts at the seventh float (offset 6 * sizeof(float))
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+        // upload our index array data to the newly-created EBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
 
-    // enable the layout locations so they can be used by the vertex shader
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
+        // on the VAO, register the current VBO with the following vertex attribute layout:
+        // - the stride length of the vertex array is 8 floats (8 * sizeof(float))
+        // - layout location 0 (position) is 3 floats and starts at the first float of the vertex array (offset 0)
+        // - layout location 1 (color) is also 3 floats but starts at the fourth float (offset 3 * sizeof(float))
+        // - layout location 2 (texcoord) is 2 floats and starts at the seventh float (offset 6 * sizeof(float))
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+
+
+        // enable the layout locations so they can be used by the vertex shader
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
     }
 
-{
-    glGenVertexArrays(1, &vao2);
-    glGenBuffers(1, &vbo2);
-    glGenBuffers(1, &ebo2);
+    {
+        glGenVertexArrays(1, &vao2);
+        glGenBuffers(1, &vbo2);
+        glGenBuffers(1, &ebo2);
 
-    glBindVertexArray(vao2);
+        glBindVertexArray(vao2);
 
-    // upload our vertex array data to the newly-created VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+        // upload our vertex array data to the newly-created VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vbo2);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
 
-    // upload our index array data to the newly-created EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo2);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), planeIndices, GL_STATIC_DRAW);
+        // upload our index array data to the newly-created EBO
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo2);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), planeIndices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
 
-    // enable the layout locations so they can be used by the vertex shader
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-}
-{
-    glGenVertexArrays(1, &vao3);
-    glGenBuffers(1, &vbo3);
-    glGenBuffers(1, &ebo3);
-
-    glBindVertexArray(vao3);
-
-    // upload our vertex array data to the newly-created VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo3);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(tetrahedronVertices), tetrahedronVertices, GL_STATIC_DRAW);
-
-    // upload our index array data to the newly-created EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo3);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tetrahedronIndices), tetrahedronIndices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
-
-    // enable the layout locations so they can be used by the vertex shader
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);   
-}
-{
-        glGenVertexArrays(1, &vao4);
-    glGenBuffers(1, &vbo4);
-    glGenBuffers(1, &ebo4);
-
-    glBindVertexArray(vao4);
-
-    // upload our vertex array data to the newly-created VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo4);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-
-    // upload our index array data to the newly-created EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo4);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
-
-    // enable the layout locations so they can be used by the vertex shader
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2); 
-}
-{
-        glGenVertexArrays(1, &vao5);
-    glGenBuffers(1, &vbo5);
-    glGenBuffers(1, &ebo5);
-
-    glBindVertexArray(vao5);
-
-    // upload our vertex array data to the newly-created VBO
-    glBindBuffer(GL_ARRAY_BUFFER, vbo5);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(tetrahedronVertices), tetrahedronVertices, GL_STATIC_DRAW);
-
-    // upload our index array data to the newly-created EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo5);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tetrahedronIndices), tetrahedronIndices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
-
-    // enable the layout locations so they can be used by the vertex shader
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2); 
-}
+        // enable the layout locations so they can be used by the vertex shader
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+    }
 
     // important: if you have more vertex arrays to draw, make sure you separately define them
     // with unique VAO, VBO, and EBO IDs, and follow the same process above to upload them to the GPU
@@ -269,11 +184,6 @@ bool setup()
     // load our textures
     texture = gdevLoadTexture("demo4.png", GL_REPEAT, true, true);
     if (! texture)
-        return false;
-
-            
-    sad = gdevLoadTexture("pepesad.png", GL_REPEAT, true, true);
-    if (! sad)
         return false;
 
     grass = gdevLoadTexture("grass.png", GL_REPEAT, true, true);
@@ -343,8 +253,7 @@ void render()
 
     // ... set up the model matrix...
     glm::mat4 modelTransform = glm::mat4(1.0f);  // set to identity first  
-    modelTransform = glm::translate(modelTransform, glm::vec3(1.0f, 2.0f, -10.0f));
-    modelTransform = glm::rotate(modelTransform, glm::radians((float) currentTime * 120), glm::vec3(0.0f,1.0f, 0.0f));
+    modelTransform = glm::translate(modelTransform, glm::vec3(0.5f, 0.2f, -3.0f));
     glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
                        1, GL_FALSE, glm::value_ptr(modelTransform));
     glActiveTexture(GL_TEXTURE0);
@@ -355,44 +264,13 @@ void render()
 
     glm::mat4 planeTransform = glm::mat4(1.0f);  // set to identity first
     planeTransform = glm::translate(planeTransform, glm::vec3(0.0f,-0.5f, 0.0f));
-    planeTransform = glm::scale(planeTransform, glm::vec3(5.0f, 0.0f,5.0f));
+    planeTransform = glm::scale(planeTransform, glm::vec3(2.0f, 0.0f,2.0f));
     glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
                        1, GL_FALSE, glm::value_ptr(planeTransform));
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, grass);
     glBindVertexArray(vao2);
     glDrawElements(GL_TRIANGLES, sizeof(planeIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
-
-
-    glm::mat4 tetrahedronTransform = glm::mat4(1.0f);  // set to identity first
-    tetrahedronTransform = glm::translate(tetrahedronTransform, glm::vec3(0.0f,-0.5f, -10.0f));  
-    tetrahedronTransform = glm::scale(tetrahedronTransform, glm::vec3(0.5f, 0.5f, 0.5f));
-    glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),1, GL_FALSE, glm::value_ptr(tetrahedronTransform));
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glBindVertexArray(vao3);
-    glDrawElements(GL_TRIANGLES, sizeof(tetrahedronIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
-
-    glm::mat4 cubeTransform1 = glm::mat4(1.0f);  // set to identity first
-    cubeTransform1 = glm::translate(cubeTransform1, glm::vec3(-5.0f, 5.0f, -15.0f));  
-    cubeTransform1 = glm::scale(cubeTransform1, glm::vec3(10.0f, 10.0f, 10.0f));
-    cubeTransform1 = glm::rotate(cubeTransform1, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    cubeTransform1 = glm::rotate(cubeTransform1, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-    glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),1, GL_FALSE, glm::value_ptr(cubeTransform1));
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glBindVertexArray(vao4);
-    glDrawElements(GL_TRIANGLES, sizeof(cubeIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
-
-    glm::mat4 cubeTransform2 = glm::mat4(1.0f);  // set to identity first
-    cubeTransform2 = glm::translate(cubeTransform2, glm::vec3(2.5f, -0.5f, -20.0f));  
-    cubeTransform2 = glm::scale(cubeTransform2, glm::vec3(5.0f, 5.0f, 5.0f));
-    cubeTransform2 = glm::rotate(cubeTransform2, glm::radians(75.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),1, GL_FALSE, glm::value_ptr(cubeTransform2));
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sad);
-    glBindVertexArray(vao5);
-    glDrawElements(GL_TRIANGLES, sizeof(cubeIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 }
 
 /*****************************************************************************/
