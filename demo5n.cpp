@@ -142,7 +142,7 @@ struct polar
 polar camera;
 glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
 
-float spotlightCutoff = 5.0f;
+float spotlightCutoff = 75.0f;
 float spotlightOuterAngle = 200.0f;
 
 float ambientIntensity = 0.1f;
