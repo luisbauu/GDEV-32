@@ -29,7 +29,7 @@
 // change this to your desired window attributes
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 360
-#define WINDOW_TITLE  "Hello Lighting (use WASDQE keys for camera, IKJLUO keys for light)"
+#define WINDOW_TITLE  "Exercise2 (use WASDQE keys for camera, IKJLUO keys for light, ZX keys for Ambient Intensity, CV keys for Specular Intensity, BN keys for Specular Power, 1-2 for Spotlight Cutoff, 3-4 for Spotlight Outer Angle)"
 GLFWwindow *pWindow;
 
 // model
@@ -45,6 +45,7 @@ float vertices[] =
      8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 4.0f,
     -8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 4.0f,
 
+    // UNCOMMENT VERTICES BELOW TO PRESERVE PLANE BUT REMOVE CUBE
     // cube top
     -1.00f,  1.00f,  1.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
      1.00f,  1.00f,  1.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
@@ -140,6 +141,14 @@ struct polar
 // variables for tracking camera and light position
 polar camera;
 glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
+
+float spotlightCutoff = 5.0f;
+float spotlightOuterAngle = 200.0f;
+
+float ambientIntensity = 0.1f;
+float specularIntensity = 5.0f;
+float specularPower = 50.0f;
+
 double previousTime = 0.0;
 
 // called by the main function to do initial setup, such as uploading vertex
@@ -229,6 +238,27 @@ void render()
         lightPosition -= glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
     if (glfwGetKey(pWindow, GLFW_KEY_O) == GLFW_PRESS)
         lightPosition += glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
+        if (glfwGetKey(pWindow, GLFW_KEY_Z) == GLFW_PRESS)
+        ambientIntensity += 0.01f;
+    if (glfwGetKey(pWindow, GLFW_KEY_X) == GLFW_PRESS)
+        ambientIntensity -= 0.01f;
+    if (glfwGetKey(pWindow, GLFW_KEY_C) == GLFW_PRESS)
+        specularIntensity += 0.01f;
+    if (glfwGetKey(pWindow, GLFW_KEY_V) == GLFW_PRESS)
+        specularIntensity -= 0.01f;
+    if (glfwGetKey(pWindow, GLFW_KEY_B) == GLFW_PRESS)
+        specularPower+= 0.1f;
+    if (glfwGetKey(pWindow, GLFW_KEY_N) == GLFW_PRESS)
+        specularPower -= 0.1f;
+    if (glfwGetKey(pWindow, GLFW_KEY_1) == GLFW_PRESS)
+        spotlightCutoff += 0.1f;
+    if (glfwGetKey(pWindow, GLFW_KEY_2) == GLFW_PRESS)
+        spotlightCutoff -= 0.1f;
+    if (glfwGetKey(pWindow, GLFW_KEY_3) == GLFW_PRESS)
+        spotlightOuterAngle += 0.1f;
+    if (glfwGetKey(pWindow, GLFW_KEY_4) == GLFW_PRESS)
+        spotlightOuterAngle -= 0.1f;
+
 
     // clear the whole frame
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -262,6 +292,13 @@ void render()
     // ... set up the light position...
     glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
                  1, glm::value_ptr(lightPosition));
+
+    glUniform1f(glGetUniformLocation(shader, "uniformAmbientIntensity"), ambientIntensity);
+    glUniform1f(glGetUniformLocation(shader, "uniformSpecularIntensity"), specularIntensity);
+    glUniform1f(glGetUniformLocation(shader, "uniformSpecularPower"), specularPower);
+
+    glUniform1f(glGetUniformLocation(shader,"spotlightCutoff"),glm::cos(glm::radians(spotlightCutoff)));
+    glUniform1f(glGetUniformLocation(shader,"spotlightOuterAngle"), glm::cos(glm::radians(spotlightOuterAngle)));
 
     // ... set the active textures...
     glActiveTexture(GL_TEXTURE0);
