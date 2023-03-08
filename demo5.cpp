@@ -41,7 +41,7 @@ float vertices[] =
 GLuint vao, vao2;         // vertex array object (stores the render state for our vertex array)
 GLuint vbo, vbo2;         // vertex buffer object (reserves GPU memory for our vertex array)
 GLuint ebo, ebo2; 
-GLuint shader, shader2;
+GLuint shader;
 GLuint texture, grass;
 
 // helper struct for defining spherical polar coordinates
@@ -83,12 +83,13 @@ struct polar
 
 // variables for tracking camera and light position
 polar camera;
-glm::vec3 lightPosition = glm::vec3(-5.0f, 3.0f, 5.0f);
-glm::vec3 lightPosition2 = glm::vec3(5.0f, 3.0f, -5.0f);
+glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
+glm::vec3 spotlightFocusPosition = glm::vec3(0.0f, -5.0f, 0.0f);
 
-float uniformAmbientIntensityValue = 0.0f;
-float uniformSpecularIntensityValue = 0.0f;
-float uniformSpecularPowerValue = 0.0f;
+
+float uniformAmbientIntensityValue = 1.0f;
+float uniformSpecularIntensityValue = 10.0f;
+float uniformSpecularPowerValue = 32.0f;
 double previousTime = 0.0;
 
 // called by the main function to do initial setup, such as uploading vertex
@@ -109,33 +110,9 @@ bool setup()
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
     }
-    // {
-    //      glGenVertexArrays(1, &vao2);
-    //     glGenBuffers(1, &vbo2);
-    //     glGenBuffers(1, &ebo2);
-
-    //     glBindVertexArray(vao2);
-
-    //     // upload our vertex array data to the newly-created VBO
-    //     glBindBuffer(GL_ARRAY_BUFFER, vbo2);
-    //     glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-
-    //     // upload our index array data to the newly-created EBO
-    //     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo2);
-    //     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), planeIndices, GL_STATIC_DRAW);
-
-    //     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
-    //     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-    //     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
-
-    //     // enable the layout locations so they can be used by the vertex shader
-    //     glEnableVertexAttribArray(0);
-    //     glEnableVertexAttribArray(1);
-    //     glEnableVertexAttribArray(2);
-    // }
 
     // load our shader program
-    shader = gdevLoadShader("demo5.vs", "demo5.fs");
+    shader = gdevLoadShader("demo5n.vs", "demo5n.fs");
     if (! shader)
         return false;
 
@@ -187,61 +164,38 @@ void render()
 
     // get a "forward" vector for controlling the light position
     glm::vec3 lightForward = glm::normalize(glm::vec3(-cameraPosition.x, 0.0f, -cameraPosition.z));
-    glm::vec3 lightForward2 = glm::normalize(glm::vec3(-cameraPosition.x, 0.0f, -cameraPosition.z));
 
-
-    if (glfwGetKey(pWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
-        current = (current + 1) % 2;  // switch between the two instances
-
-    if(current == 0){
-        if (glfwGetKey(pWindow, GLFW_KEY_I) == GLFW_PRESS)
-            lightPosition += lightForward * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_K) == GLFW_PRESS)
-            lightPosition -= lightForward * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_J) == GLFW_PRESS)
-            lightPosition -= glm::cross(lightForward, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_L) == GLFW_PRESS)
-            lightPosition += glm::cross(lightForward, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_U) == GLFW_PRESS)
-            lightPosition -= glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_O) == GLFW_PRESS)
-            lightPosition += glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_Z) == GLFW_PRESS)
-            uniformAmbientIntensityValue += 0.1f;
-        if (glfwGetKey(pWindow, GLFW_KEY_X) == GLFW_PRESS)
-            uniformAmbientIntensityValue -= 0.1f;
-        if (glfwGetKey(pWindow, GLFW_KEY_C) == GLFW_PRESS)
-            uniformSpecularIntensityValue += 0.1f;
-        if (glfwGetKey(pWindow, GLFW_KEY_V) == GLFW_PRESS)
-            uniformSpecularIntensityValue -= 0.1f;
-        if (glfwGetKey(pWindow, GLFW_KEY_B) == GLFW_PRESS)
-            uniformSpecularPowerValue += 1.0f;
-        if (glfwGetKey(pWindow, GLFW_KEY_N) == GLFW_PRESS)
-            uniformSpecularPowerValue -= 1.0f;
+    if (glfwGetKey(pWindow, GLFW_KEY_I) == GLFW_PRESS)
+        lightPosition += lightForward * translationAmount;
+    if (glfwGetKey(pWindow, GLFW_KEY_K) == GLFW_PRESS)
+        lightPosition -= lightForward * translationAmount;
+    if (glfwGetKey(pWindow, GLFW_KEY_J) == GLFW_PRESS)
+        lightPosition -= glm::cross(lightForward, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
+    if (glfwGetKey(pWindow, GLFW_KEY_L) == GLFW_PRESS)
+        lightPosition += glm::cross(lightForward, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
+    if (glfwGetKey(pWindow, GLFW_KEY_U) == GLFW_PRESS)
+        lightPosition -= glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
+    if (glfwGetKey(pWindow, GLFW_KEY_O) == GLFW_PRESS)
+        lightPosition += glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
+    if (glfwGetKey(pWindow, GLFW_KEY_Z) == GLFW_PRESS)
+        uniformAmbientIntensityValue += 0.01f;
+    if (glfwGetKey(pWindow, GLFW_KEY_X) == GLFW_PRESS)
+        uniformAmbientIntensityValue -= 0.01f;
+    if (glfwGetKey(pWindow, GLFW_KEY_C) == GLFW_PRESS)
+        uniformSpecularIntensityValue += 0.01f;
+    if (glfwGetKey(pWindow, GLFW_KEY_V) == GLFW_PRESS)
+        uniformSpecularIntensityValue -= 0.01f;
+    if (glfwGetKey(pWindow, GLFW_KEY_B) == GLFW_PRESS)
+        uniformSpecularPowerValue += 0.01f;
+    if (glfwGetKey(pWindow, GLFW_KEY_N) == GLFW_PRESS)
+        uniformSpecularPowerValue -= 0.01f;
         
-    }else{
-        if (glfwGetKey(pWindow, GLFW_KEY_I) == GLFW_PRESS)
-            lightPosition2 += lightForward2 * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_K) == GLFW_PRESS)
-            lightPosition2 -= lightForward2 * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_J) == GLFW_PRESS)
-            lightPosition2 -= glm::cross(lightForward2, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_L) == GLFW_PRESS)
-            lightPosition2 += glm::cross(lightForward2, glm::vec3(0.0f, 1.0f, 0.0f)) * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_U) == GLFW_PRESS)
-            lightPosition2 -= glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_O) == GLFW_PRESS)
-            lightPosition2 += glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
-    }
-   
-
     // clear the whole frame
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // using our shader program...
     glUseProgram(shader);
-
 
     glUniform1f(glGetUniformLocation(shader, "uniformAmbientIntensity"), uniformAmbientIntensityValue);
     glUniform1f(glGetUniformLocation(shader, "uniformSpecularIntensity"), uniformSpecularIntensityValue);
@@ -269,13 +223,13 @@ void render()
     glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
                        1, GL_FALSE, glm::value_ptr(modelTransform));
 
+    glUniform3fv(glGetUniformLocation(shader,"spotlightFocusPosition"),1,glm::value_ptr(spotlightFocusPosition));
+
+    glUniform1f(glGetUniformLocation(shader,"spotLightCutoff"),glm::cos(glm::radians(3.0f)));
+
     // ... set up the light position...
     glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
                  1, glm::value_ptr(lightPosition));
-
-    // ... set up the light position2...
-    glUniform3fv(glGetUniformLocation(shader, "lightPosition2"),
-                 1, glm::value_ptr(lightPosition2));
 
     // ... set the active texture...
     glActiveTexture(GL_TEXTURE0);

@@ -16,17 +16,18 @@
 layout (location = 0) in vec3 vertexPosition;
 layout (location = 1) in vec3 vertexNormal;
 layout (location = 2) in vec2 vertexTexCoord;
+
 uniform mat4 projectionTransform;
 uniform mat4 viewTransform;
 uniform mat4 modelTransform;
 uniform vec3 lightPosition;
-uniform vec3 lightPosition2;
+uniform vec3 focusPosition;
+
 out vec3 shaderPosition;
 out vec3 shaderNormal;
 out vec2 shaderTexCoord;
 out vec3 shaderLightPosition;
-out vec3 shaderLightPosition2;
-
+out vec3 shaderFocusPosition;
 
 void main()
 {
@@ -45,8 +46,7 @@ void main()
     // also compute the light position in camera space
     // (we want all lighting calculations to be done in camera space to avoid losing precision)
     shaderLightPosition = vec3(viewTransform * vec4(lightPosition, 1.0f));
-    shaderLightPosition2 = vec3(viewTransform * vec4(lightPosition2, 1.0f));
-
+    shaderFocusPosition = vec3(viewTransform * vec4(focusPosition, 1.0f));
 
     // we still need OpenGL to compute the final vertex position in projection space
     // to correctly determine where the fragments of the triangle actually go on the screen

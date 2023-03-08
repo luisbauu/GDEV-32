@@ -14,11 +14,14 @@ in vec3 shaderPosition;
 in vec3 shaderNormal;
 in vec2 shaderTexCoord;
 in vec3 shaderLightPosition;
-in vec3 shaderLightPosition2;
+in vec3 shaderFocusPosition;
 
 uniform float uniformAmbientIntensity;
 uniform float uniformSpecularIntensity;
 uniform float uniformSpecularPower;
+
+uniform float spotlightCutoff;
+
 uniform sampler2D diffuseMap;
 out vec4 fragmentColor;
 
@@ -47,6 +50,21 @@ void main()
     vec3 reflectDir = reflect(-lightDir, normalDir);
     vec3 lightSpecular = pow(max(dot(reflectDir, viewDir), 0), specularPower) * lightColor * specularIntensity;
 
-    // compute final fragment color
-    fragmentColor = vec4((lightAmbient + lightDiffuse + lightSpecular), 1.0f) * texture(diffuseMap, shaderTexCoord);
+    vec3 spotLightDir = normalize(shaderFocusPosition - shaderLightPosition);
+    float theta = dot(-lightDir, spotLightDir);
+
+    if (theta > spotlightCutoff)
+    {
+        fragmentColor = vec4((lightAmbient + lightDiffuse + lightSpecular), 1.0f) * texture(diffuseMap, shaderTexCoord);
+    }
+    else{
+        fragmentColor = vec4((lightAmbient), 1.0f) * texture(diffuseMap, shaderTexCoord);
+    }
+
+    
+
+
+
+
+
 }
