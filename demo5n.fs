@@ -11,6 +11,7 @@ uniform float uniformSpecularIntensity;
 uniform float uniformSpecularPower;
 
 uniform float spotlightCutoff;
+uniform float spotlightOuterAngle;
 
 uniform sampler2D diffuseMap;
 uniform sampler2D normalMap;
@@ -19,10 +20,11 @@ out vec4 fragmentColor;
 void main()
 {
     vec3 lightDir = normalize(shaderLightPosition - shaderPosition);
-    vec3 spotlightDir = normalize(shaderFocusPosition - shaderLightPosition);
+    vec3 spotlightDir = normalize(shaderFocusPosition - shaderPosition);
     float theta = dot(-lightDir, spotlightDir);
     
-    float I = clamp((theta-20.0f)/(spotlightCutoff-20.0f), 0, 1);
+    float I = clamp((theta-spotlightOuterAngle)/(spotlightCutoff-spotlightOuterAngle), 0, 1);
+    
     // define some constant properties for the light
     // (you should really be passing these parameters into the shader as uniform vars instead)
     vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);  // diffuse

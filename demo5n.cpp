@@ -139,7 +139,7 @@ struct polar
 
 // variables for tracking camera and light position
 polar camera;
-glm::vec3 lightPosition = glm::vec3(-5.0f, 3.0f, 5.0f);
+glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
 double previousTime = 0.0;
 
 // called by the main function to do initial setup, such as uploading vertex
@@ -172,8 +172,8 @@ bool setup()
     glUniform1i(glGetUniformLocation(shader, "normalMap"),  1);
 
     // load our textures
-    texture[0] = gdevLoadTexture("demo5.png", GL_REPEAT, true, true);
-    texture[1] = gdevLoadTexture("demo5n.png", GL_REPEAT, true, true);
+    texture[0] = gdevLoadTexture("exercise2diffusemap.png", GL_REPEAT, true, true);
+    texture[1] = gdevLoadTexture("exercise2normalmap.png", GL_REPEAT, true, true);
     if (! texture[0] || ! texture[1])
         return false;
 

@@ -20,7 +20,7 @@
 // change this to your desired window attributes
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 360
-#define WINDOW_TITLE  "Exercise2 (use WASDQE keys for camera, IKJLUO keys for light)"
+#define WINDOW_TITLE  "Exercise2 (use WASDQE keys for camera, IKJLUO keys for light, ZX keys for Ambient Intensity, CV keys for Specular Intensity, BN keys for Specular Power)"
 GLFWwindow *pWindow;
 int current = 0;
 
@@ -38,11 +38,11 @@ float vertices[] =
 };
 
 // OpenGL object IDs
-GLuint vao, vao2;         // vertex array object (stores the render state for our vertex array)
-GLuint vbo, vbo2;         // vertex buffer object (reserves GPU memory for our vertex array)
-GLuint ebo, ebo2; 
+GLuint vao;         // vertex array object (stores the render state for our vertex array)
+GLuint vbo;         // vertex buffer object (reserves GPU memory for our vertex array)
+GLuint ebo; 
 GLuint shader;
-GLuint texture, grass;
+GLuint texture[2];
 
 // helper struct for defining spherical polar coordinates
 struct polar
@@ -83,13 +83,15 @@ struct polar
 
 // variables for tracking camera and light position
 polar camera;
-glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
-glm::vec3 spotlightFocusPosition = glm::vec3(0.0f, -5.0f, 0.0f);
+glm::vec3 lightPosition = glm::vec3(-5.0f, -5.0f, -5.0f);
+glm::vec3 spotlightFocusPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
+float spotlightCutoff = 7.5f;
+float spotlightOuterAngle = 7.5f;
 
 float uniformAmbientIntensityValue = 1.0f;
-float uniformSpecularIntensityValue = 10.0f;
-float uniformSpecularPowerValue = 32.0f;
+float uniformSpecularIntensityValue = 5.0f;
+float uniformSpecularPowerValue = 50.0f;
 double previousTime = 0.0;
 
 // called by the main function to do initial setup, such as uploading vertex
@@ -116,13 +118,14 @@ bool setup()
     if (! shader)
         return false;
 
-    // load our texture
-    texture = gdevLoadTexture("demo5.png", GL_REPEAT, true, true);
-    if (! texture)
-        return false;
-    
-    grass = gdevLoadTexture("grass.png", GL_REPEAT, true, true);
-    if (! grass)
+    glUseProgram(shader);
+    glUniform1i(glGetUniformLocation(shader, "diffuseMap"), 0);
+    glUniform1i(glGetUniformLocation(shader, "normalMap"),  1);
+
+    // load our textures
+    texture[0] = gdevLoadTexture("exercise2diffusemap.png", GL_REPEAT, true, true);
+    texture[1] = gdevLoadTexture("exercise2normalmap.png", GL_REPEAT, true, true);
+    if (! texture[0] || ! texture[1])
         return false;
 
     // enable z-buffer depth testing and face culling
@@ -186,9 +189,9 @@ void render()
     if (glfwGetKey(pWindow, GLFW_KEY_V) == GLFW_PRESS)
         uniformSpecularIntensityValue -= 0.01f;
     if (glfwGetKey(pWindow, GLFW_KEY_B) == GLFW_PRESS)
-        uniformSpecularPowerValue += 0.01f;
+        uniformSpecularPowerValue += 0.1f;
     if (glfwGetKey(pWindow, GLFW_KEY_N) == GLFW_PRESS)
-        uniformSpecularPowerValue -= 0.01f;
+        uniformSpecularPowerValue -= 0.1f;
         
     // clear the whole frame
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -225,15 +228,19 @@ void render()
 
     glUniform3fv(glGetUniformLocation(shader,"spotlightFocusPosition"),1,glm::value_ptr(spotlightFocusPosition));
 
-    glUniform1f(glGetUniformLocation(shader,"spotLightCutoff"),glm::cos(glm::radians(3.0f)));
+    glUniform1f(glGetUniformLocation(shader,"spotlightCutoff"),glm::cos(glm::radians(spotlightCutoff)));
+    glUniform1f(glGetUniformLocation(shader,"spotlightOuterAngle"), spotlightOuterAngle);
+
 
     // ... set up the light position...
     glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
                  1, glm::value_ptr(lightPosition));
 
-    // ... set the active texture...
+       // ... set the active textures...
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, grass);
+    glBindTexture(GL_TEXTURE_2D, texture[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture[1]);
 
     // ... then draw our triangles
     glBindVertexArray(vao);
