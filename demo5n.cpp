@@ -23,15 +23,17 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <gdev.h>
+#include <vector>
 
 // change this to your desired window attributes
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 360
 #define WINDOW_TITLE  "Exercise2 (use WASDQE keys for camera, IKJLUO keys for light, ZX keys for Ambient Intensity, CV keys for Specular Intensity, BN keys for Specular Power, 1-2 for Spotlight Cutoff, 3-4 for Spotlight Outer Angle)"
 GLFWwindow *pWindow;
-
+/*
 // model
 float vertices[] =
 {
@@ -94,13 +96,80 @@ float vertices[] =
     -1.00f,  1.00f,  1.00f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
     -1.00f,  1.00f, -1.00f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f
 };
-
+*/
 // OpenGL object IDs
 GLuint vao;
 GLuint vbo;
 GLuint shader;
 GLuint texture[2];
 
+
+float vertices[] = 
+{
+    /*// ground plane
+    -8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+     8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 0.0f,
+     8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 4.0f,
+    -8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+     8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 4.0f,
+    -8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 4.0f,*/
+    /* ============= POINTS CALCULATED THROUGH CODE BELOW ===============
+    int main()
+    {
+        double radius = 5.0; // radius of the circle
+        double centerX = 0.0; // x-coordinate of the center of the circle
+        double centerY = 0.0; // y-coordinate of the center of the circle
+        double centerZ = 0.0; // z-coordinate of the center of the circle
+        
+        int numPoints = 10; // number of points to generate
+        
+        // loop through and generate the coordinates of the points on the circle
+        for (int i = 0; i < numPoints; i++)
+        {
+            double angle = (2.0 * PI * i) / numPoints;
+            double x = centerX + (radius * cos(angle));
+            double y = centerY + (radius * sin(angle));
+            double z = centerZ;
+            
+            // calculate the normal and tangent vectors
+            double nx = -sin(angle);
+            double ny = cos(angle);
+            double nz = 0.0;
+            double tx = cos(angle);
+            double ty = sin(angle);
+            double tz = 0.0;
+            
+            // output the point coordinates, normal vector, and tangent vector
+            cout << fixed << setprecision(2) << x << "f , " << y << "f , " << z << "f, "
+                << nx << "f, " << ny << "f, " << nz << "f, "
+                << tx << "f, " << ty << "f, " << tz << "f, " << 
+                "1.0f, 0.0f,"<< endl;
+        }
+        
+        return 0;
+    }*/
+    //cone Verts
+    0.00f , 0.00f , 5.00f, 0.00f, 0.00f, 10.00f, 1.00f, 0.00f, 0.00f, 1.0f, 0.0f,
+    5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.0f, 0.0f,
+    4.05f , 2.94f , 0.00f, -0.59f, 0.81f, 0.00f, 0.81f, 0.59f, 0.00f, 1.0f, 0.0f,
+    1.55f , 4.76f , 0.00f, -0.95f, 0.31f, 0.00f, 0.31f, 0.95f, 0.00f, 1.0f, 0.0f,
+    -1.55f , 4.76f , 0.00f, -0.95f, -0.31f, 0.00f, -0.31f, 0.95f, 0.00f, 1.0f, 0.0f,
+    -4.05f , 2.94f , 0.00f, -0.59f, -0.81f, 0.00f, -0.81f, 0.59f, 0.00f, 1.0f, 0.0f,
+    -5.00f , 0.00f , 0.00f, -0.00f, -1.00f, 0.00f, -1.00f, 0.00f, 0.00f, 1.0f, 0.0f,
+    -4.05f , -2.94f , 0.00f, 0.59f, -0.81f, 0.00f, -0.81f, -0.59f, 0.00f, 1.0f, 0.0f,
+    -1.55f , -4.76f , 0.00f, 0.95f, -0.31f, 0.00f, -0.31f, -0.95f, 0.00f, 1.0f, 0.0f,
+    1.55f , -4.76f , 0.00f, 0.95f, 0.31f, 0.00f, 0.31f, -0.95f, 0.00f, 1.0f, 0.0f,
+    4.05f , -2.94f , 0.00f, 0.59f, 0.81f, 0.00f, 0.81f, -0.59f, 0.00f, 1.0f, 0.0f,
+    5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.0f, 0.0f,
+};
+
+
+const int NUM_SEGMENTS = 32; // number of segments to approximate the cone
+
+/*void coneCoords() {
+    for
+    
+};*/
 // helper struct for defining spherical polar coordinates
 struct polar
 {
@@ -308,7 +377,7 @@ void render()
 
     // ... then draw our triangles
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices) / (11 * sizeof(float)));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(vertices));
 }
 
 /*****************************************************************************/
