@@ -98,70 +98,14 @@ float vertices[] =
 };
 */
 // OpenGL object IDs
-GLuint vao;
-GLuint vbo;
+GLuint vao, vao2;
+GLuint vbo, vbo2;
 GLuint shader;
-GLuint texture[2];
+GLuint texture[2], texturePlane[2];
 
 
 float vertices[] = 
 {
-    /*// ground plane
-    -8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-     8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 0.0f,
-     8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 4.0f,
-    -8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-     8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 4.0f,
-    -8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 4.0f,*/
-
-    /* ============= POINTS CALCULATED THROUGH CODE BELOW ===============
-    #include <iostream>
-    #include <cmath>
-    #include <iomanip>
-
-    using namespace std;
-
-    double PI = 3.14159265358979323846;
-
-    int main()
-        {
-            double radius = 5.0; // radius of the circle
-            double centerX = 0.0; // x-coordinate of the center of the circle
-            double centerY = 0.0; // y-coordinate of the center of the circle
-            double centerZ = 0.0; // z-coordinate of the center of the circle
-            
-            int numPoints = 100; // number of points to generate
-            
-            // loop through and generate the coordinates of the points on the circle
-            for (int i = 0; i < numPoints; i++)
-            {
-                double angle = (2.0 * PI * i) / numPoints;
-                double x = centerX + (radius * cos(angle));
-                double y = centerY + (radius * sin(angle));
-                double z = centerZ;
-                
-                // calculate the normal and tangent vectors
-                double normx = -sin(angle);
-                double normy = cos(angle);
-                double normz = 0.0;
-                double tanx = cos(angle);
-                double tany = sin(angle);
-                double tanz = 0.0;
-                double s = angle/(2*PI);
-                double t = (5 - z) / 5;
-
-                // output the point coordinates, normal vector, and tangent vector
-                cout << fixed << setprecision(2) << x << "f , " << y << "f , " << z << "f, "
-                    << normx << "f, " << normy << "f, " << normz << "f, "
-                    << tanx << "f, " << tany << "f, " << tanz << "f, "<< 
-                    s <<"f, "<< t << "f, "<< endl;
-            }
-            
-            return 0;
-        }
-    */
-    
-    //cone Verts
     0.00f , 0.00f , 15.00f, 0.00f, 0.00f, 10.00f, 1.00f, 0.00f, 0.00f, 0.5f, 0.5f,
 
     5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 0.00f, 1.00f, 
@@ -268,6 +212,14 @@ float vertices[] =
     5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.00f, 1.00f,
 };
 
+float planeVertices []={
+    -8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+     8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 0.0f,
+     8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 4.0f,
+    -8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+     8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 4.0f,
+    -8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 4.0f,};
+
 // helper struct for defining spherical polar coordinates
 struct polar
 {
@@ -312,7 +264,7 @@ glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
 float spotlightCutoff = 75.0f;
 float spotlightOuterAngle = 200.0f;
 
-float ambientIntensity = 0.1f;
+float ambientIntensity = 0.75f;
 float specularIntensity = 5.0f;
 float specularPower = 50.0f;
 
@@ -337,6 +289,22 @@ bool setup()
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
 
+        // upload the model to the GPU (explanations omitted for brevity)
+    glGenVertexArrays(1, &vao2);
+    glGenBuffers(1, &vbo2);
+    glBindVertexArray(vao2);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo2);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) (3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) (6 * sizeof(float)));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*) (9 * sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+
+
     // load our shader program
     shader = gdevLoadShader("demo5n.vs", "demo5n.fs");
     if (! shader)
@@ -348,9 +316,14 @@ bool setup()
     glUniform1i(glGetUniformLocation(shader, "normalMap"),  1);
 
     // load our textures
-    texture[0] = gdevLoadTexture("Cone.jpg", GL_REPEAT, true, true);
-    texture[1] = gdevLoadTexture("Cone.jpg", GL_REPEAT, true, true);
+    texture[0] = gdevLoadTexture("cone.jpeg", GL_REPEAT, true, true);
+    texture[1] = gdevLoadTexture("conenormalmap.png", GL_REPEAT, true, true);
     if (! texture[0] || ! texture[1])
+        return false;
+
+    texturePlane[0] = gdevLoadTexture("exercise2diffusemap.png", GL_REPEAT, true, true);
+    texturePlane[1] = gdevLoadTexture("exercise2normalmap.png", GL_REPEAT, true, true);
+    if (! texturePlane[0] || ! texturePlane[1])
         return false;
 
     // enable z-buffer depth testing and face culling
@@ -450,12 +423,7 @@ void render()
                                 glm::vec3(0.0f, 1.0f, 0.0f));  // up vector
     glUniformMatrix4fv(glGetUniformLocation(shader, "viewTransform"),
                        1, GL_FALSE, glm::value_ptr(viewTransform));
-
-    // ... set up the model matrix... (just identity for this demo)
-    glm::mat4 modelTransform = glm::mat4(1.0f);
-    glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
-                       1, GL_FALSE, glm::value_ptr(modelTransform));
-
+    
     // ... set up the light position...
     glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
                  1, glm::value_ptr(lightPosition));
@@ -467,16 +435,33 @@ void render()
     glUniform1f(glGetUniformLocation(shader,"spotlightCutoff"),glm::cos(glm::radians(spotlightCutoff)));
     glUniform1f(glGetUniformLocation(shader,"spotlightOuterAngle"), glm::cos(glm::radians(spotlightOuterAngle)));
 
-    // ... set the active textures...
+    // CONE MODEL
+    glm::mat4 modelTransform = glm::mat4(1.0f);
+    modelTransform = glm::scale(modelTransform, glm::vec3(0.75f, 0.75f, 0.75f));
+    modelTransform = glm::translate(modelTransform, glm::vec3(0.0f,3.0f, 0.0f));
+    modelTransform = glm::rotate(modelTransform, glm::radians((float) 145.0f), glm::vec3(1.0f,0.0f,0.0f));
+    modelTransform = glm::rotate(modelTransform, glm::radians((float) currentTime * 90), glm::vec3(0.0f,0.0f,1.0f));
+
+    glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
+                       1, GL_FALSE, glm::value_ptr(modelTransform));
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture[0]);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture[1]);
-
-    // ... then draw our triangles
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 102);
-    //glDrawArrays(GL_TRIANGLE_FAN, 12, sizeof(vertices));
+
+    glm::mat4 planeTransform = glm::mat4(1.0f);
+    planeTransform = glm::translate(planeTransform, glm::vec3(0.0f,-5.0f, 0.0f));
+    planeTransform = glm::scale(planeTransform, glm::vec3(1.5f, 0.0f,1.5f));
+    glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
+                       1, GL_FALSE, glm::value_ptr(planeTransform));
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texturePlane[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texturePlane[1]);
+    glBindVertexArray(vao2);
+    glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));
 }
 
 /*****************************************************************************/
