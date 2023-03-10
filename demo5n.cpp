@@ -113,63 +113,161 @@ float vertices[] =
     -8.00f, -2.00f,  8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
      8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  4.0f, 4.0f,
     -8.00f, -2.00f, -8.00f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f, 4.0f,*/
+
     /* ============= POINTS CALCULATED THROUGH CODE BELOW ===============
+    #include <iostream>
+    #include <cmath>
+    #include <iomanip>
+
+    using namespace std;
+
+    double PI = 3.14159265358979323846;
+
     int main()
-    {
-        double radius = 5.0; // radius of the circle
-        double centerX = 0.0; // x-coordinate of the center of the circle
-        double centerY = 0.0; // y-coordinate of the center of the circle
-        double centerZ = 0.0; // z-coordinate of the center of the circle
-        
-        int numPoints = 10; // number of points to generate
-        
-        // loop through and generate the coordinates of the points on the circle
-        for (int i = 0; i < numPoints; i++)
         {
-            double angle = (2.0 * PI * i) / numPoints;
-            double x = centerX + (radius * cos(angle));
-            double y = centerY + (radius * sin(angle));
-            double z = centerZ;
+            double radius = 5.0; // radius of the circle
+            double centerX = 0.0; // x-coordinate of the center of the circle
+            double centerY = 0.0; // y-coordinate of the center of the circle
+            double centerZ = 0.0; // z-coordinate of the center of the circle
             
-            // calculate the normal and tangent vectors
-            double nx = -sin(angle);
-            double ny = cos(angle);
-            double nz = 0.0;
-            double tx = cos(angle);
-            double ty = sin(angle);
-            double tz = 0.0;
+            int numPoints = 100; // number of points to generate
             
-            // output the point coordinates, normal vector, and tangent vector
-            cout << fixed << setprecision(2) << x << "f , " << y << "f , " << z << "f, "
-                << nx << "f, " << ny << "f, " << nz << "f, "
-                << tx << "f, " << ty << "f, " << tz << "f, " << 
-                "1.0f, 0.0f,"<< endl;
+            // loop through and generate the coordinates of the points on the circle
+            for (int i = 0; i < numPoints; i++)
+            {
+                double angle = (2.0 * PI * i) / numPoints;
+                double x = centerX + (radius * cos(angle));
+                double y = centerY + (radius * sin(angle));
+                double z = centerZ;
+                
+                // calculate the normal and tangent vectors
+                double normx = -sin(angle);
+                double normy = cos(angle);
+                double normz = 0.0;
+                double tanx = cos(angle);
+                double tany = sin(angle);
+                double tanz = 0.0;
+                double s = angle/(2*PI);
+                double t = (5 - z) / 5;
+
+                // output the point coordinates, normal vector, and tangent vector
+                cout << fixed << setprecision(2) << x << "f , " << y << "f , " << z << "f, "
+                    << normx << "f, " << normy << "f, " << normz << "f, "
+                    << tanx << "f, " << tany << "f, " << tanz << "f, "<< 
+                    s <<"f, "<< t << "f, "<< endl;
+            }
+            
+            return 0;
         }
-        
-        return 0;
-    }*/
+    */
+    
     //cone Verts
-    0.00f , 0.00f , 5.00f, 0.00f, 0.00f, 10.00f, 1.00f, 0.00f, 0.00f, 1.0f, 0.0f,
-    5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.0f, 0.0f,
-    4.05f , 2.94f , 0.00f, -0.59f, 0.81f, 0.00f, 0.81f, 0.59f, 0.00f, 1.0f, 0.0f,
-    1.55f , 4.76f , 0.00f, -0.95f, 0.31f, 0.00f, 0.31f, 0.95f, 0.00f, 1.0f, 0.0f,
-    -1.55f , 4.76f , 0.00f, -0.95f, -0.31f, 0.00f, -0.31f, 0.95f, 0.00f, 1.0f, 0.0f,
-    -4.05f , 2.94f , 0.00f, -0.59f, -0.81f, 0.00f, -0.81f, 0.59f, 0.00f, 1.0f, 0.0f,
-    -5.00f , 0.00f , 0.00f, -0.00f, -1.00f, 0.00f, -1.00f, 0.00f, 0.00f, 1.0f, 0.0f,
-    -4.05f , -2.94f , 0.00f, 0.59f, -0.81f, 0.00f, -0.81f, -0.59f, 0.00f, 1.0f, 0.0f,
-    -1.55f , -4.76f , 0.00f, 0.95f, -0.31f, 0.00f, -0.31f, -0.95f, 0.00f, 1.0f, 0.0f,
-    1.55f , -4.76f , 0.00f, 0.95f, 0.31f, 0.00f, 0.31f, -0.95f, 0.00f, 1.0f, 0.0f,
-    4.05f , -2.94f , 0.00f, 0.59f, 0.81f, 0.00f, 0.81f, -0.59f, 0.00f, 1.0f, 0.0f,
-    5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.0f, 0.0f,
+    0.00f , 0.00f , 15.00f, 0.00f, 0.00f, 10.00f, 1.00f, 0.00f, 0.00f, 0.5f, 0.5f,
+
+    5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 0.00f, 1.00f, 
+    4.99f , 0.31f , 0.00f, -0.06f, 1.00f, 0.00f, 1.00f, 0.06f, 0.00f, 0.01f, 1.00f, 
+    4.96f , 0.63f , 0.00f, -0.13f, 0.99f, 0.00f, 0.99f, 0.13f, 0.00f, 0.02f, 1.00f, 
+    4.91f , 0.94f , 0.00f, -0.19f, 0.98f, 0.00f, 0.98f, 0.19f, 0.00f, 0.03f, 1.00f, 
+    4.84f , 1.24f , 0.00f, -0.25f, 0.97f, 0.00f, 0.97f, 0.25f, 0.00f, 0.04f, 1.00f, 
+    4.76f , 1.55f , 0.00f, -0.31f, 0.95f, 0.00f, 0.95f, 0.31f, 0.00f, 0.05f, 1.00f, 
+    4.65f , 1.84f , 0.00f, -0.37f, 0.93f, 0.00f, 0.93f, 0.37f, 0.00f, 0.06f, 1.00f, 
+    4.52f , 2.13f , 0.00f, -0.43f, 0.90f, 0.00f, 0.90f, 0.43f, 0.00f, 0.07f, 1.00f, 
+    4.38f , 2.41f , 0.00f, -0.48f, 0.88f, 0.00f, 0.88f, 0.48f, 0.00f, 0.08f, 1.00f, 
+    4.22f , 2.68f , 0.00f, -0.54f, 0.84f, 0.00f, 0.84f, 0.54f, 0.00f, 0.09f, 1.00f, 
+    4.05f , 2.94f , 0.00f, -0.59f, 0.81f, 0.00f, 0.81f, 0.59f, 0.00f, 0.10f, 1.00f, 
+    3.85f , 3.19f , 0.00f, -0.64f, 0.77f, 0.00f, 0.77f, 0.64f, 0.00f, 0.11f, 1.00f, 
+    3.64f , 3.42f , 0.00f, -0.68f, 0.73f, 0.00f, 0.73f, 0.68f, 0.00f, 0.12f, 1.00f, 
+    3.42f , 3.64f , 0.00f, -0.73f, 0.68f, 0.00f, 0.68f, 0.73f, 0.00f, 0.13f, 1.00f, 
+    3.19f , 3.85f , 0.00f, -0.77f, 0.64f, 0.00f, 0.64f, 0.77f, 0.00f, 0.14f, 1.00f, 
+    2.94f , 4.05f , 0.00f, -0.81f, 0.59f, 0.00f, 0.59f, 0.81f, 0.00f, 0.15f, 1.00f, 
+    2.68f , 4.22f , 0.00f, -0.84f, 0.54f, 0.00f, 0.54f, 0.84f, 0.00f, 0.16f, 1.00f, 
+    2.41f , 4.38f , 0.00f, -0.88f, 0.48f, 0.00f, 0.48f, 0.88f, 0.00f, 0.17f, 1.00f, 
+    2.13f , 4.52f , 0.00f, -0.90f, 0.43f, 0.00f, 0.43f, 0.90f, 0.00f, 0.18f, 1.00f, 
+    1.84f , 4.65f , 0.00f, -0.93f, 0.37f, 0.00f, 0.37f, 0.93f, 0.00f, 0.19f, 1.00f, 
+    1.55f , 4.76f , 0.00f, -0.95f, 0.31f, 0.00f, 0.31f, 0.95f, 0.00f, 0.20f, 1.00f, 
+    1.24f , 4.84f , 0.00f, -0.97f, 0.25f, 0.00f, 0.25f, 0.97f, 0.00f, 0.21f, 1.00f, 
+    0.94f , 4.91f , 0.00f, -0.98f, 0.19f, 0.00f, 0.19f, 0.98f, 0.00f, 0.22f, 1.00f, 
+    0.63f , 4.96f , 0.00f, -0.99f, 0.13f, 0.00f, 0.13f, 0.99f, 0.00f, 0.23f, 1.00f, 
+    0.31f , 4.99f , 0.00f, -1.00f, 0.06f, 0.00f, 0.06f, 1.00f, 0.00f, 0.24f, 1.00f, 
+    0.00f , 5.00f , 0.00f, -1.00f, 0.00f, 0.00f, 0.00f, 1.00f, 0.00f, 0.25f, 1.00f, 
+    -0.31f , 4.99f , 0.00f, -1.00f, -0.06f, 0.00f, -0.06f, 1.00f, 0.00f, 0.26f, 1.00f, 
+    -0.63f , 4.96f , 0.00f, -0.99f, -0.13f, 0.00f, -0.13f, 0.99f, 0.00f, 0.27f, 1.00f, 
+    -0.94f , 4.91f , 0.00f, -0.98f, -0.19f, 0.00f, -0.19f, 0.98f, 0.00f, 0.28f, 1.00f, 
+    -1.24f , 4.84f , 0.00f, -0.97f, -0.25f, 0.00f, -0.25f, 0.97f, 0.00f, 0.29f, 1.00f, 
+    -1.55f , 4.76f , 0.00f, -0.95f, -0.31f, 0.00f, -0.31f, 0.95f, 0.00f, 0.30f, 1.00f, 
+    -1.84f , 4.65f , 0.00f, -0.93f, -0.37f, 0.00f, -0.37f, 0.93f, 0.00f, 0.31f, 1.00f, 
+    -2.13f , 4.52f , 0.00f, -0.90f, -0.43f, 0.00f, -0.43f, 0.90f, 0.00f, 0.32f, 1.00f, 
+    -2.41f , 4.38f , 0.00f, -0.88f, -0.48f, 0.00f, -0.48f, 0.88f, 0.00f, 0.33f, 1.00f, 
+    -2.68f , 4.22f , 0.00f, -0.84f, -0.54f, 0.00f, -0.54f, 0.84f, 0.00f, 0.34f, 1.00f, 
+    -2.94f , 4.05f , 0.00f, -0.81f, -0.59f, 0.00f, -0.59f, 0.81f, 0.00f, 0.35f, 1.00f, 
+    -3.19f , 3.85f , 0.00f, -0.77f, -0.64f, 0.00f, -0.64f, 0.77f, 0.00f, 0.36f, 1.00f, 
+    -3.42f , 3.64f , 0.00f, -0.73f, -0.68f, 0.00f, -0.68f, 0.73f, 0.00f, 0.37f, 1.00f, 
+    -3.64f , 3.42f , 0.00f, -0.68f, -0.73f, 0.00f, -0.73f, 0.68f, 0.00f, 0.38f, 1.00f, 
+    -3.85f , 3.19f , 0.00f, -0.64f, -0.77f, 0.00f, -0.77f, 0.64f, 0.00f, 0.39f, 1.00f, 
+    -4.05f , 2.94f , 0.00f, -0.59f, -0.81f, 0.00f, -0.81f, 0.59f, 0.00f, 0.40f, 1.00f, 
+    -4.22f , 2.68f , 0.00f, -0.54f, -0.84f, 0.00f, -0.84f, 0.54f, 0.00f, 0.41f, 1.00f, 
+    -4.38f , 2.41f , 0.00f, -0.48f, -0.88f, 0.00f, -0.88f, 0.48f, 0.00f, 0.42f, 1.00f, 
+    -4.52f , 2.13f , 0.00f, -0.43f, -0.90f, 0.00f, -0.90f, 0.43f, 0.00f, 0.43f, 1.00f, 
+    -4.65f , 1.84f , 0.00f, -0.37f, -0.93f, 0.00f, -0.93f, 0.37f, 0.00f, 0.44f, 1.00f, 
+    -4.76f , 1.55f , 0.00f, -0.31f, -0.95f, 0.00f, -0.95f, 0.31f, 0.00f, 0.45f, 1.00f, 
+    -4.84f , 1.24f , 0.00f, -0.25f, -0.97f, 0.00f, -0.97f, 0.25f, 0.00f, 0.46f, 1.00f, 
+    -4.91f , 0.94f , 0.00f, -0.19f, -0.98f, 0.00f, -0.98f, 0.19f, 0.00f, 0.47f, 1.00f, 
+    -4.96f , 0.63f , 0.00f, -0.13f, -0.99f, 0.00f, -0.99f, 0.13f, 0.00f, 0.48f, 1.00f, 
+    -4.99f , 0.31f , 0.00f, -0.06f, -1.00f, 0.00f, -1.00f, 0.06f, 0.00f, 0.49f, 1.00f, 
+    -5.00f , 0.00f , 0.00f, -0.00f, -1.00f, 0.00f, -1.00f, 0.00f, 0.00f, 0.50f, 1.00f, 
+    -4.99f , -0.31f , 0.00f, 0.06f, -1.00f, 0.00f, -1.00f, -0.06f, 0.00f, 0.51f, 1.00f, 
+    -4.96f , -0.63f , 0.00f, 0.13f, -0.99f, 0.00f, -0.99f, -0.13f, 0.00f, 0.52f, 1.00f, 
+    -4.91f , -0.94f , 0.00f, 0.19f, -0.98f, 0.00f, -0.98f, -0.19f, 0.00f, 0.53f, 1.00f, 
+    -4.84f , -1.24f , 0.00f, 0.25f, -0.97f, 0.00f, -0.97f, -0.25f, 0.00f, 0.54f, 1.00f, 
+    -4.76f , -1.55f , 0.00f, 0.31f, -0.95f, 0.00f, -0.95f, -0.31f, 0.00f, 0.55f, 1.00f, 
+    -4.65f , -1.84f , 0.00f, 0.37f, -0.93f, 0.00f, -0.93f, -0.37f, 0.00f, 0.56f, 1.00f, 
+    -4.52f , -2.13f , 0.00f, 0.43f, -0.90f, 0.00f, -0.90f, -0.43f, 0.00f, 0.57f, 1.00f, 
+    -4.38f , -2.41f , 0.00f, 0.48f, -0.88f, 0.00f, -0.88f, -0.48f, 0.00f, 0.58f, 1.00f, 
+    -4.22f , -2.68f , 0.00f, 0.54f, -0.84f, 0.00f, -0.84f, -0.54f, 0.00f, 0.59f, 1.00f, 
+    -4.05f , -2.94f , 0.00f, 0.59f, -0.81f, 0.00f, -0.81f, -0.59f, 0.00f, 0.60f, 1.00f, 
+    -3.85f , -3.19f , 0.00f, 0.64f, -0.77f, 0.00f, -0.77f, -0.64f, 0.00f, 0.61f, 1.00f, 
+    -3.64f , -3.42f , 0.00f, 0.68f, -0.73f, 0.00f, -0.73f, -0.68f, 0.00f, 0.62f, 1.00f, 
+    -3.42f , -3.64f , 0.00f, 0.73f, -0.68f, 0.00f, -0.68f, -0.73f, 0.00f, 0.63f, 1.00f, 
+    -3.19f , -3.85f , 0.00f, 0.77f, -0.64f, 0.00f, -0.64f, -0.77f, 0.00f, 0.64f, 1.00f, 
+    -2.94f , -4.05f , 0.00f, 0.81f, -0.59f, 0.00f, -0.59f, -0.81f, 0.00f, 0.65f, 1.00f, 
+    -2.68f , -4.22f , 0.00f, 0.84f, -0.54f, 0.00f, -0.54f, -0.84f, 0.00f, 0.66f, 1.00f, 
+    -2.41f , -4.38f , 0.00f, 0.88f, -0.48f, 0.00f, -0.48f, -0.88f, 0.00f, 0.67f, 1.00f, 
+    -2.13f , -4.52f , 0.00f, 0.90f, -0.43f, 0.00f, -0.43f, -0.90f, 0.00f, 0.68f, 1.00f, 
+    -1.84f , -4.65f , 0.00f, 0.93f, -0.37f, 0.00f, -0.37f, -0.93f, 0.00f, 0.69f, 1.00f, 
+    -1.55f , -4.76f , 0.00f, 0.95f, -0.31f, 0.00f, -0.31f, -0.95f, 0.00f, 0.70f, 1.00f, 
+    -1.24f , -4.84f , 0.00f, 0.97f, -0.25f, 0.00f, -0.25f, -0.97f, 0.00f, 0.71f, 1.00f, 
+    -0.94f , -4.91f , 0.00f, 0.98f, -0.19f, 0.00f, -0.19f, -0.98f, 0.00f, 0.72f, 1.00f, 
+    -0.63f , -4.96f , 0.00f, 0.99f, -0.13f, 0.00f, -0.13f, -0.99f, 0.00f, 0.73f, 1.00f, 
+    -0.31f , -4.99f , 0.00f, 1.00f, -0.06f, 0.00f, -0.06f, -1.00f, 0.00f, 0.74f, 1.00f, 
+    -0.00f , -5.00f , 0.00f, 1.00f, -0.00f, 0.00f, -0.00f, -1.00f, 0.00f, 0.75f, 1.00f, 
+    0.31f , -4.99f , 0.00f, 1.00f, 0.06f, 0.00f, 0.06f, -1.00f, 0.00f, 0.76f, 1.00f, 
+    0.63f , -4.96f , 0.00f, 0.99f, 0.13f, 0.00f, 0.13f, -0.99f, 0.00f, 0.77f, 1.00f, 
+    0.94f , -4.91f , 0.00f, 0.98f, 0.19f, 0.00f, 0.19f, -0.98f, 0.00f, 0.78f, 1.00f, 
+    1.24f , -4.84f , 0.00f, 0.97f, 0.25f, 0.00f, 0.25f, -0.97f, 0.00f, 0.79f, 1.00f, 
+    1.55f , -4.76f , 0.00f, 0.95f, 0.31f, 0.00f, 0.31f, -0.95f, 0.00f, 0.80f, 1.00f, 
+    1.84f , -4.65f , 0.00f, 0.93f, 0.37f, 0.00f, 0.37f, -0.93f, 0.00f, 0.81f, 1.00f, 
+    2.13f , -4.52f , 0.00f, 0.90f, 0.43f, 0.00f, 0.43f, -0.90f, 0.00f, 0.82f, 1.00f, 
+    2.41f , -4.38f , 0.00f, 0.88f, 0.48f, 0.00f, 0.48f, -0.88f, 0.00f, 0.83f, 1.00f, 
+    2.68f , -4.22f , 0.00f, 0.84f, 0.54f, 0.00f, 0.54f, -0.84f, 0.00f, 0.84f, 1.00f, 
+    2.94f , -4.05f , 0.00f, 0.81f, 0.59f, 0.00f, 0.59f, -0.81f, 0.00f, 0.85f, 1.00f, 
+    3.19f , -3.85f , 0.00f, 0.77f, 0.64f, 0.00f, 0.64f, -0.77f, 0.00f, 0.86f, 1.00f, 
+    3.42f , -3.64f , 0.00f, 0.73f, 0.68f, 0.00f, 0.68f, -0.73f, 0.00f, 0.87f, 1.00f, 
+    3.64f , -3.42f , 0.00f, 0.68f, 0.73f, 0.00f, 0.73f, -0.68f, 0.00f, 0.88f, 1.00f, 
+    3.85f , -3.19f , 0.00f, 0.64f, 0.77f, 0.00f, 0.77f, -0.64f, 0.00f, 0.89f, 1.00f, 
+    4.05f , -2.94f , 0.00f, 0.59f, 0.81f, 0.00f, 0.81f, -0.59f, 0.00f, 0.90f, 1.00f, 
+    4.22f , -2.68f , 0.00f, 0.54f, 0.84f, 0.00f, 0.84f, -0.54f, 0.00f, 0.91f, 1.00f, 
+    4.38f , -2.41f , 0.00f, 0.48f, 0.88f, 0.00f, 0.88f, -0.48f, 0.00f, 0.92f, 1.00f, 
+    4.52f , -2.13f , 0.00f, 0.43f, 0.90f, 0.00f, 0.90f, -0.43f, 0.00f, 0.93f, 1.00f, 
+    4.65f , -1.84f , 0.00f, 0.37f, 0.93f, 0.00f, 0.93f, -0.37f, 0.00f, 0.94f, 1.00f, 
+    4.76f , -1.55f , 0.00f, 0.31f, 0.95f, 0.00f, 0.95f, -0.31f, 0.00f, 0.95f, 1.00f, 
+    4.84f , -1.24f , 0.00f, 0.25f, 0.97f, 0.00f, 0.97f, -0.25f, 0.00f, 0.96f, 1.00f, 
+    4.91f , -0.94f , 0.00f, 0.19f, 0.98f, 0.00f, 0.98f, -0.19f, 0.00f, 0.97f, 1.00f, 
+    4.96f , -0.63f , 0.00f, 0.13f, 0.99f, 0.00f, 0.99f, -0.13f, 0.00f, 0.98f, 1.00f, 
+    4.99f , -0.31f , 0.00f, 0.06f, 1.00f, 0.00f, 1.00f, -0.06f, 0.00f, 0.99f, 1.00f, 
+    
+    5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.00f, 1.00f,
 };
 
-
-const int NUM_SEGMENTS = 32; // number of segments to approximate the cone
-
-/*void coneCoords() {
-    for
-    
-};*/
 // helper struct for defining spherical polar coordinates
 struct polar
 {
@@ -250,14 +348,14 @@ bool setup()
     glUniform1i(glGetUniformLocation(shader, "normalMap"),  1);
 
     // load our textures
-    texture[0] = gdevLoadTexture("exercise2diffusemap.png", GL_REPEAT, true, true);
-    texture[1] = gdevLoadTexture("exercise2normalmap.png", GL_REPEAT, true, true);
+    texture[0] = gdevLoadTexture("Cone.jpg", GL_REPEAT, true, true);
+    texture[1] = gdevLoadTexture("Cone.jpg", GL_REPEAT, true, true);
     if (! texture[0] || ! texture[1])
         return false;
 
     // enable z-buffer depth testing and face culling
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
 
     return true;
 }
@@ -307,7 +405,7 @@ void render()
         lightPosition -= glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
     if (glfwGetKey(pWindow, GLFW_KEY_O) == GLFW_PRESS)
         lightPosition += glm::vec3(0.0f, 1.0f, 0.0f) * translationAmount;
-        if (glfwGetKey(pWindow, GLFW_KEY_Z) == GLFW_PRESS)
+    if (glfwGetKey(pWindow, GLFW_KEY_Z) == GLFW_PRESS)
         ambientIntensity += 0.01f;
     if (glfwGetKey(pWindow, GLFW_KEY_X) == GLFW_PRESS)
         ambientIntensity -= 0.01f;
@@ -377,7 +475,8 @@ void render()
 
     // ... then draw our triangles
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(vertices));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 102);
+    //glDrawArrays(GL_TRIANGLE_FAN, 12, sizeof(vertices));
 }
 
 /*****************************************************************************/
