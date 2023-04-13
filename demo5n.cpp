@@ -535,7 +535,6 @@ void render()
     glUniform1f(glGetUniformLocation(shader,"spotlightCutoff"),glm::cos(glm::radians(spotlightCutoff)));
     glUniform1f(glGetUniformLocation(shader,"spotlightOuterAngle"), glm::cos(glm::radians(spotlightOuterAngle)));
 
-    glUniform1i(glGetUniformLocation(shader, "shadowMap"),  1);
     ///////////////////////////////////////////////////////////////////////////
     // draw the shadow map
     glm::mat4 lightTransform = renderShadowMap();
@@ -572,6 +571,9 @@ void render()
     glBindTexture(GL_TEXTURE_2D, texturePlane[0]);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texturePlane[1]);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
+    glUniform1i(glGetUniformLocation(shader, "shadowMap"),  1);
     glBindVertexArray(vao2);
     glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));
 }
