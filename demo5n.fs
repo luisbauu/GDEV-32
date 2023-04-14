@@ -10,6 +10,8 @@ uniform float uniformAmbientIntensity;
 uniform float uniformSpecularIntensity;
 uniform float uniformSpecularPower;
 
+uniform int shadowsDisabled;
+
 uniform float spotlightCutoff;
 uniform float spotlightOuterAngle;
 
@@ -49,16 +51,25 @@ void main()
     vec3 lightSpecular = pow(max(dot(reflectDir, viewDir), 0), specularPower) * lightColor * specularIntensity;
 
 
-    if (I == 1)
-    {
-        fragmentColor = vec4((lightAmbient + lightDiffuse + lightSpecular), 1.0f) * texture(diffuseMap, shaderTexCoord);
-    }
-    else if (I > 0 && I < 1)
-    {
-        fragmentColor = vec4((lightAmbient + (lightDiffuse + lightSpecular) * I), 1.0f) * texture(diffuseMap, shaderTexCoord);
-    }
-    else
-    {
+    if(shadowsDisabled == 1){
         fragmentColor = vec4(lightAmbient, 1.0f) * texture(diffuseMap, shaderTexCoord);
     }
+    else{
+        if (I == 1)
+        {
+            fragmentColor = vec4((lightAmbient + lightDiffuse + lightSpecular), 1.0f) * texture(diffuseMap, shaderTexCoord);
+        }
+        else if (I > 0 && I < 1)
+        {
+            fragmentColor = vec4((lightAmbient + (lightDiffuse + lightSpecular) * I), 1.0f) * texture(diffuseMap, shaderTexCoord);
+        }
+        else
+        {
+            fragmentColor = vec4(lightAmbient, 1.0f) * texture(diffuseMap, shaderTexCoord);
+        }
+    }
+
+
+    
+
 }

@@ -17,4 +17,5 @@ uniform mat4 modelTransform;
 void main()
 {
     gl_Position = lightTransform * modelTransform * vec4(vertexPosition, 1.0f);
+    
 }

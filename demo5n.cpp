@@ -271,6 +271,8 @@ float specularPower = 50.0f;
 
 double previousTime = 0.0;
 
+bool shadowsDisabled = false;
+
 // SHADOW MAPPING CODE
 
 #define SHADOW_SIZE 1024
@@ -352,6 +354,9 @@ glm::mat4 renderShadowMap()
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices) / (8 * sizeof(float)));
 
+    // ... then draw our triangles
+    glBindVertexArray(vao2);
+    glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));
 
     // set the framebuffer back to the default onscreen buffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -360,8 +365,6 @@ glm::mat4 renderShadowMap()
     int width, height;
     glfwGetFramebufferSize(pWindow, &width, &height);
     glViewport(0, 0, width, height);
-
-
 
     // we will need the light transformation matrix again in the main rendering code
     return lightTransform;
@@ -452,11 +455,6 @@ void render()
     float rotationAmount = 100.0f * elapsedTime;
     float translationAmount = 10.0f * elapsedTime;
 
-     ///////////////////////////////////////////////////////////////////////////
-    // draw the shadow map
-    glm::mat4 lightTransform = renderShadowMap();
-    ///////////////////////////////////////////////////////////////////////////
-
     // handle key events for camera
     if (glfwGetKey(pWindow, GLFW_KEY_W) == GLFW_PRESS)
         camera.radius -= translationAmount;
@@ -512,7 +510,7 @@ void render()
         spotlightOuterAngle -= 0.1f;
 
     // HOLD KEY 5 TO CULL BACKFACES
-    if (glfwGetKey(pWindow, GLFW_KEY_5) == GLFW_PRESS && !backfaceCulled)
+    if (glfwGetKey(pWindow, GLFW_KEY_5) == GLFW_PRESS)
     {
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -521,6 +519,33 @@ void render()
     {
         glDisable(GL_CULL_FACE);
     }
+
+    // HOLD SPACE KEy TO DISABLE SHADOWS
+    if(glfwGetKey(pWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        
+        glUniform1i(glGetUniformLocation(shader, "shadowsDisabled"), 1);
+       
+    }
+    else
+    {
+        glUniform1i(glGetUniformLocation(shader, "shadowsDisabled"), 0);
+
+        glm::mat4 lightTransform = renderShadowMap();
+
+            // ... set up the light transformation (for looking up the shadow map)...
+        glUniformMatrix4fv(glGetUniformLocation(shader, "lightTransform"),
+                        1, GL_FALSE, glm::value_ptr(lightTransform));
+            // ... set the active texture...
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
+        glUniform1i(glGetUniformLocation(shader, "diffuseMap"), 0);
+        glUniform1i(glGetUniformLocation(shader, "shadowMap"),  1);
+    }
+
+    
 
     // clear the whole frame
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -550,26 +575,18 @@ void render()
     glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
                  1, glm::value_ptr(lightPosition));
 
-    ///////////////////////////////////////////////////////////////////////////
-    // ... set up the light transformation (for looking up the shadow map)...
-    glUniformMatrix4fv(glGetUniformLocation(shader, "lightTransform"),
-                       1, GL_FALSE, glm::value_ptr(lightTransform));
-
-    // ... set the active texture...
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture[0]);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
-    glUniform1i(glGetUniformLocation(shader, "diffuseMap"), 0);
-    glUniform1i(glGetUniformLocation(shader, "shadowMap"),  1);
-    ///////////////////////////////////////////////////////////////////////////
-
     glUniform1f(glGetUniformLocation(shader, "uniformAmbientIntensity"), ambientIntensity);
     glUniform1f(glGetUniformLocation(shader, "uniformSpecularIntensity"), specularIntensity);
     glUniform1f(glGetUniformLocation(shader, "uniformSpecularPower"), specularPower);
 
     glUniform1f(glGetUniformLocation(shader,"spotlightCutoff"),glm::cos(glm::radians(spotlightCutoff)));
     glUniform1f(glGetUniformLocation(shader,"spotlightOuterAngle"), glm::cos(glm::radians(spotlightOuterAngle)));
+
+
+
+
+
+
 
     // CONE MODEL
     glm::mat4 modelTransform = glm::mat4(1.0f);
