@@ -31,7 +31,7 @@
 // change this to your desired window attributes
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 360
-#define WINDOW_TITLE  "Exercise2 (use WASDQE keys for camera, IKJLUO keys for light, ZX keys for Ambient Intensity, CV keys for Specular Intensity, BN keys for Specular Power, 1-2 for Spotlight Cutoff, 3-4 for Spotlight Outer Angle)"
+#define WINDOW_TITLE  "Exercise2 (use WASDQE keys for camera, IKJLUO keys for light, ZX keys for Ambient Intensity, CV keys for Specular Intensity, BN keys for Specular Power, 1-2 for Spotlight Cutoff, 3-4 for Spotlight Outer Angle, 5 Cull Back-Facing Triangles)"
 GLFWwindow *pWindow;
 /*
 // model
@@ -102,6 +102,7 @@ GLuint vao, vao2;
 GLuint vbo, vbo2;
 GLuint shader;
 GLuint texture[2], texturePlane[2];
+bool backfaceCulled = false;
 
 
 float vertices[] = 
@@ -270,6 +271,105 @@ float specularPower = 50.0f;
 
 double previousTime = 0.0;
 
+// SHADOW MAPPING CODE
+
+#define SHADOW_SIZE 1024
+GLuint shadowMapFbo;      // shadow map framebuffer object
+GLuint shadowMapTexture;  // shadow map texture
+GLuint shadowMapRbo;
+GLuint shadowMapShader;   // shadow map shader
+
+bool setupShadowMap()
+{
+    // create the FBO for rendering shadows
+    glGenFramebuffers(1, &shadowMapFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFbo);
+
+    // attach a texture object to the framebuffer
+    glGenTextures(1, &shadowMapTexture);
+    glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_SIZE, SHADOW_SIZE,
+                 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMapTexture, 0);
+
+    // check if we did everything right
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "Could not create custom framebuffer.\n";
+        return false;
+    }
+
+    // load the shader program for drawing the shadow map
+    shadowMapShader = gdevLoadShader("demo8s.vs", "demo8s.fs");
+    if (! shadowMapShader)
+        return false;
+
+    // set the framebuffer back to the default onscreen buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    
+    return true;
+}
+
+glm::mat4 renderShadowMap()
+{
+    // use the shadow framebuffer for drawing the shadow map
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFbo);
+
+    // the viewport should be the size of the shadow map
+    glViewport(0, 0, SHADOW_SIZE, SHADOW_SIZE);
+
+    // clear the shadow map
+    // (we don't have a color buffer attachment, so no need to clear that)
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // using the shadow map shader...
+    glUseProgram(shadowMapShader);
+
+    // ... set up the light space matrix...
+    // (note that if you use a spot light, the FOV and the center position
+    // vector should be set to your spotlight's outer radius and focus point,
+    // respectively)
+    glm::mat4 lightTransform;
+    lightTransform = glm::perspective(glm::radians(75.0f),       // fov
+                                      1.0f,                      // aspect ratio
+                                      0.1f,                      // near plane
+                                      100.0f);                   // far plane
+    lightTransform *= glm::lookAt(lightPosition,                 // eye position
+                                  glm::vec3(0.0f, 0.0f, 0.0f),   // center position
+                                  glm::vec3(0.0f, 1.0f, 0.0f));  // up vector
+    glUniformMatrix4fv(glGetUniformLocation(shadowMapShader, "lightTransform"),
+                       1, GL_FALSE, glm::value_ptr(lightTransform));
+
+    // ... set up the model matrix... (just identity for this demo)
+    glm::mat4 modelTransform = glm::mat4(1.0f);
+    glUniformMatrix4fv(glGetUniformLocation(shadowMapShader, "modelTransform"),
+                       1, GL_FALSE, glm::value_ptr(modelTransform));
+
+    // ... then draw our triangles
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices) / (8 * sizeof(float)));
+
+
+    // set the framebuffer back to the default onscreen buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // before drawing the final scene, we need to set drawing to the whole window
+    int width, height;
+    glfwGetFramebufferSize(pWindow, &width, &height);
+    glViewport(0, 0, width, height);
+
+
+
+    // we will need the light transformation matrix again in the main rendering code
+    return lightTransform;
+}
+
+// SHADOW MAPPING CODE
+///////////////////////////////////////////////////////////////////////////////
+
 // called by the main function to do initial setup, such as uploading vertex
 // arrays, shader programs, etc.; returns true if successful, false otherwise
 bool setup()
@@ -330,6 +430,13 @@ bool setup()
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
+    ///////////////////////////////////////////////////////////////////////////
+    // setup shadow rendering
+    if (! setupShadowMap())
+        return false;
+    ///////////////////////////////////////////////////////////////////////////
+
+
     return true;
 }
 
@@ -344,6 +451,11 @@ void render()
     // define how much to rotate and translate according to time
     float rotationAmount = 100.0f * elapsedTime;
     float translationAmount = 10.0f * elapsedTime;
+
+     ///////////////////////////////////////////////////////////////////////////
+    // draw the shadow map
+    glm::mat4 lightTransform = renderShadowMap();
+    ///////////////////////////////////////////////////////////////////////////
 
     // handle key events for camera
     if (glfwGetKey(pWindow, GLFW_KEY_W) == GLFW_PRESS)
@@ -399,6 +511,16 @@ void render()
     if (glfwGetKey(pWindow, GLFW_KEY_4) == GLFW_PRESS)
         spotlightOuterAngle -= 0.1f;
 
+    // HOLD KEY 5 TO CULL BACKFACES
+    if (glfwGetKey(pWindow, GLFW_KEY_5) == GLFW_PRESS && !backfaceCulled)
+    {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+    }
+    else
+    {
+        glDisable(GL_CULL_FACE);
+    }
 
     // clear the whole frame
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -427,6 +549,20 @@ void render()
     // ... set up the light position...
     glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
                  1, glm::value_ptr(lightPosition));
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ... set up the light transformation (for looking up the shadow map)...
+    glUniformMatrix4fv(glGetUniformLocation(shader, "lightTransform"),
+                       1, GL_FALSE, glm::value_ptr(lightTransform));
+
+    // ... set the active texture...
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
+    glUniform1i(glGetUniformLocation(shader, "diffuseMap"), 0);
+    glUniform1i(glGetUniformLocation(shader, "shadowMap"),  1);
+    ///////////////////////////////////////////////////////////////////////////
 
     glUniform1f(glGetUniformLocation(shader, "uniformAmbientIntensity"), ambientIntensity);
     glUniform1f(glGetUniformLocation(shader, "uniformSpecularIntensity"), specularIntensity);
