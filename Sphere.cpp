@@ -8,7 +8,7 @@ double PI = 3.14159265358979323846;
 
 int main()
 {
-    int numCircles = 50; // number of circles to generate
+    int numCircles = 20; // number of circles to generate
     double initialRadius = 5.0; // initial radius of the circles
     double radiusShrinkFactor = 1 / (numCircles + 0.5); // factor by which radius shrinks for each circle
 
@@ -27,7 +27,6 @@ int main()
             double angle2 = (2.0 * PI * i) / numPoints; // calculate the angle for longitude
             double x = radius1 * cos(angle2); // calculate x-coordinate
             double y = radius1 * sin(angle2); // calculate y-coordinate
-            z = abs(z); // take the absolute value of z
 
             // calculate the normal and tangent vectors
             double normx = x / initialRadius;
