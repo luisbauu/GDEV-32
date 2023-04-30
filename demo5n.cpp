@@ -1108,6 +1108,97 @@ GLuint fboVao;      // vertex array object for the fullscreen quadrilateral
 GLuint fboVbo;      // vertex buffer object for the fullscreen quadrilateral
 GLuint fboShader;   // shader for the fullscreen quadrilateral
 
+#define SHADOW_SIZE 1024
+GLuint shadowMapFbo;      // shadow map framebuffer object
+GLuint shadowMapTexture;  // shadow map texture
+GLuint shadowMapRbo;
+GLuint shadowMapShader;   // shadow map shader
+
+bool setupShadowMap()
+{
+    // create the FBO for rendering shadows
+    glGenFramebuffers(1, &shadowMapFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFbo);
+
+    // attach a texture object to the framebuffer
+    glGenTextures(1, &shadowMapTexture);
+    glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_SIZE, SHADOW_SIZE,
+                 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMapTexture, 0);
+
+    // check if we did everything right
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "Could not create custom framebuffer.\n";
+        return false;
+    }
+
+    // load the shader program for drawing the shadow map
+    shadowMapShader = gdevLoadShader("demo8s.vs", "demo8s.fs");
+    if (! shadowMapShader)
+        return false;
+
+    // set the framebuffer back to the default onscreen buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    
+    return true;
+}
+
+glm::mat4 renderShadowMap()
+{
+    // use the shadow framebuffer for drawing the shadow map
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFbo);
+
+    // the viewport should be the size of the shadow map
+    glViewport(0, 0, SHADOW_SIZE, SHADOW_SIZE);
+
+    // clear the shadow map
+    // (we don't have a color buffer attachment, so no need to clear that)
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // using the shadow map shader...
+    glUseProgram(shadowMapShader);
+
+    // ... set up the light space matrix...
+    // (note that if you use a spot light, the FOV and the center position
+    // vector should be set to your spotlight's outer radius and focus point,
+    // respectively)
+    glm::mat4 lightTransform;
+    lightTransform = glm::perspective(glm::radians(75.0f),       // fov
+                                      1.0f,                      // aspect ratio
+                                      0.1f,                      // near plane
+                                      100.0f);                   // far plane
+    lightTransform *= glm::lookAt(lightPosition,                 // eye position
+                                  glm::vec3(0.0f, 0.0f, 0.0f),   // center position
+                                  glm::vec3(0.0f, 1.0f, 0.0f));  // up vector
+    glUniformMatrix4fv(glGetUniformLocation(shadowMapShader, "lightTransform"),
+                       1, GL_FALSE, glm::value_ptr(lightTransform));
+
+    // ... set up the model matrix... (just identity for this demo)
+    glm::mat4 modelTransform = glm::mat4(1.0f);
+    glUniformMatrix4fv(glGetUniformLocation(shadowMapShader, "modelTransform"),
+                       1, GL_FALSE, glm::value_ptr(modelTransform));
+
+    // ... then draw our triangles
+    glBindVertexArray(vao2);
+    glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));
+
+    // set the framebuffer back to the default onscreen buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // before drawing the final scene, we need to set drawing to the whole window
+    int width, height;
+    glfwGetFramebufferSize(pWindow, &width, &height);
+    glViewport(0, 0, width, height);
+
+    // we will need the light transformation matrix again in the main rendering code
+    return lightTransform;
+}
+
 bool setupFbo()
 {
     // create the framebuffer object
@@ -1308,10 +1399,8 @@ bool setup()
     if (! texture[0] || ! texture[1])
         return false;
 
-    /*frameshader = gdevLoadShader("framevert.vs","framefrag.fs");
-    glUseProgram(frameshader);
-    glUniform1i(glGetUniformLocation(frameshader, "screentexture"), 0);*/
-
+    if (! setupShadowMap())
+            return false;
     if (! setupFbo())
         return false;
     // enable z-buffer depth testing and face culling
