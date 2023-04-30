@@ -10,14 +10,14 @@ uniform mat4 viewTransform;
 uniform mat4 modelTransform;
 uniform vec3 lightPosition;
 uniform vec3 spotlightFocusPosition;
-
+uniform mat4 lightTransform;
 
 out vec3 shaderPosition;
 out mat3 shaderTBN;
 out vec2 shaderTexCoord;
 out vec3 shaderLightPosition;
 out vec3 shaderFocusPosition;
-
+out vec4 shaderLightSpacePosition;
 
 void main()
 {
@@ -43,5 +43,7 @@ void main()
 
     // we still need OpenGL to compute the final vertex position in projection space
     // to correctly determine where the fragments of the triangle actually go on the screen
+    
+    shaderLightSpacePosition = lightTransform * modelTransform * vec4(vertexPosition, 1.0f);
     gl_Position = projectionTransform * vec4(shaderPosition, 1.0f);
 }
