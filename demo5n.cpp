@@ -103,8 +103,6 @@ GLuint vbo, vbo2, vbo3;
 GLuint shader, frameshader;
 GLuint texture[2], texturePlane[2], iceCreamTexture[2];
 
-bool grayscale = false;
-
 /*============= SPHERE POINTS CALCULATED THROUGH CODE BELOW ===============
 #include <iostream>
 #include <cmath>
@@ -1575,16 +1573,6 @@ void render()
         }
     }
 
-    
-    
-    /*if (glfwGetKey(pWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
-    {
-        grayscale = !grayscale;
-        if (grayscale)
-            renderFbo(); // render to FBO if enabled
-        else
-            glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind default framebuffer if disabled
-    }*/
 }
 
 /*****************************************************************************/
