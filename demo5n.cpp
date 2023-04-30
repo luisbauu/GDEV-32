@@ -642,8 +642,9 @@ float coneVertices []=
     4.84f , -1.24f , 0.00f, 0.25f, 0.97f, 0.00f, 0.97f, -0.25f, 0.00f, 0.96f, 1.00f, 
     4.91f , -0.94f , 0.00f, 0.19f, 0.98f, 0.00f, 0.98f, -0.19f, 0.00f, 0.97f, 1.00f, 
     4.96f , -0.63f , 0.00f, 0.13f, 0.99f, 0.00f, 0.99f, -0.13f, 0.00f, 0.98f, 1.00f, 
-    4.99f , -0.31f , 0.00f, 0.06f, 1.00f, 0.00f, 1.00f, -0.06f, 0.00f, 0.99f, 1.00f,
-    5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 0.00f, 1.00f,
+    4.99f , -0.31f , 0.00f, 0.06f, 1.00f, 0.00f, 1.00f, -0.06f, 0.00f, 0.99f, 1.00f, 
+    5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 1.00f, 1.00f, 
+
 };
 
 /* ===== INDICES GENERATED THROUGH CODE BELOW =====
@@ -1360,6 +1361,10 @@ void render()
     glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));*/
 
     glBindVertexArray(vao3);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture[1]);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 102);
 }
 
