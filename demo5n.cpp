@@ -100,9 +100,10 @@ float vertices[] =
 // OpenGL object IDs
 GLuint vao, vao2, vao3;
 GLuint vbo, vbo2, vbo3;
-GLuint shader;
+GLuint shader, frameshader;
 GLuint texture[2], texturePlane[2], iceCreamTexture[2];
 
+bool grayscale = false;
 
 /*============= SPHERE POINTS CALCULATED THROUGH CODE BELOW ===============
 #include <iostream>
@@ -488,7 +489,7 @@ int main()
 /* ============= CONE VERTICES FROM PAST EXERCISE ===============*/
 float coneVertices []=
 {
-    0.00f , 0.00f , 15.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 0.00f, 1.00f,
+    0.00f , 0.00f , 15.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 0.50f, 0.50f,
 
     5.00f , 0.00f , 0.00f, -0.00f, 1.00f, 0.00f, 1.00f, 0.00f, 0.00f, 0.00f, 1.00f, 
     4.99f , 0.31f , 0.00f, -0.06f, 1.00f, 0.00f, 1.00f, 0.06f, 0.00f, 0.01f, 1.00f, 
@@ -1078,6 +1079,113 @@ GLuint planeIndices[] =
     208,219,198,
     198,219,209,
 };
+
+float rectangleVertices[] =
+{
+	// Coords    // texCoords
+	 1.0f, -1.0f,  1.0f, 0.0f,
+	-1.0f, -1.0f,  0.0f, 0.0f,
+	-1.0f,  1.0f,  0.0f, 1.0f,
+
+	 1.0f,  1.0f,  1.0f, 1.0f,
+	 1.0f, -1.0f,  1.0f, 0.0f,
+	-1.0f,  1.0f,  0.0f, 1.0f
+};
+
+// CUSTOM FRAMEBUFFER CODE
+
+float screenQuadVertices[] =   // vertices for a fullscreen quadrilateral
+{
+    // position   texcoords
+    -1.0f, -1.0f, 0.0f, 0.0f,
+     1.0f, -1.0f, 1.0f, 0.0f,
+     1.0f,  1.0f, 1.0f, 1.0f,
+    -1.0f,  1.0f, 0.0f, 1.0f
+};
+
+GLuint fbo;         // framebuffer object
+GLuint fboTexture;  // texture for the framebuffer
+GLuint fboRbo;      // renderbuffer for the framebuffer
+GLuint fboVao;      // vertex array object for the fullscreen quadrilateral
+GLuint fboVbo;      // vertex buffer object for the fullscreen quadrilateral
+GLuint fboShader;   // shader for the fullscreen quadrilateral
+
+bool setupFbo()
+{
+    // create the framebuffer object
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    // attach a texture object to the framebuffer
+    glGenTextures(1, &fboTexture);
+    glBindTexture(GL_TEXTURE_2D, fboTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexture, 0);
+
+    // attach a renderbuffer object (containing a depth buffer) to the framebuffer
+    glGenRenderbuffers(1, &fboRbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, fboRbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fboRbo);
+
+    // check if we did everything right
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cout << "Could not create custom framebuffer.\n";
+        return false;
+    }
+
+    // create the VAO and VBO for the fullscreen quadrilateral
+    glGenVertexArrays(1, &fboVao);
+    glGenBuffers(1, &fboVbo);
+    glBindVertexArray(fboVao);
+    glBindBuffer(GL_ARRAY_BUFFER, fboVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(screenQuadVertices), screenQuadVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    // load the shader program for the fullscreen quadrilateral
+    fboShader = gdevLoadShader("demo7.vs", "demo7.fs");
+    if (! fboShader)
+        return false;
+
+    // set the framebuffer back to the default onscreen buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return true;
+}
+
+void renderFbo()
+{
+    // set the framebuffer back to the default onscreen buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // always draw to the whole window
+    int width, height;
+    glfwGetFramebufferSize(pWindow, &width, &height);
+    glViewport(0, 0, width, height);
+
+    // clear the onscreen buffer
+    // (the clear color does not matter because we're filling the window with our framebuffer texture)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // using the framebuffer shader...
+    glUseProgram(fboShader);
+
+    // ... set the active texture to our framebuffer texture...
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, fboTexture);
+
+    // ... then draw our fullscreen quadrilateral
+    glBindVertexArray(fboVao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, sizeof(screenQuadVertices) / (4 * sizeof(float)));
+}
+
+// CUSTOM FRAMEBUFFER CODE
+
 // helper struct for defining spherical polar coordinates
 struct polar
 {
@@ -1201,8 +1309,14 @@ bool setup()
     iceCreamTexture[1] = gdevLoadTexture("IceCream2NMap.png", GL_REPEAT, true, true);
     if (! texture[0] || ! texture[1])
         return false;
+
+    /*frameshader = gdevLoadShader("framevert.vs","framefrag.fs");
+    glUseProgram(frameshader);
+    glUniform1i(glGetUniformLocation(frameshader, "screentexture"), 0);*/
+
+    if (! setupFbo())
+        return false;
     // enable z-buffer depth testing and face culling
-    glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
     return true;
@@ -1274,100 +1388,202 @@ void render()
     if (glfwGetKey(pWindow, GLFW_KEY_4) == GLFW_PRESS)
         spotlightOuterAngle -= 0.1f;
 
-
-    // clear the whole frame
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // using our shader program...
-    glUseProgram(shader);
-
-    // ... set up the projection matrix...
-    glm::mat4 projectionTransform;
-    projectionTransform = glm::perspective(glm::radians(45.0f),                   // fov
-                                           (float) WINDOW_WIDTH / WINDOW_HEIGHT,  // aspect ratio
-                                           0.1f,                                  // near plane
-                                           100.0f);                               // far plane
-    glUniformMatrix4fv(glGetUniformLocation(shader, "projectionTransform"),
-                       1, GL_FALSE, glm::value_ptr(projectionTransform));
-
-    // ... set up the view matrix...
-    glm::mat4 viewTransform;
-    viewTransform = glm::lookAt(cameraPosition,                // eye position
-                                glm::vec3(0.0f, 0.0f, 0.0f),   // center position
-                                glm::vec3(0.0f, 1.0f, 0.0f));  // up vector
-    glUniformMatrix4fv(glGetUniformLocation(shader, "viewTransform"),
-                       1, GL_FALSE, glm::value_ptr(viewTransform));
-    
-    // ... set up the light position...
-    glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
-                 1, glm::value_ptr(lightPosition));
-
-    glUniform1f(glGetUniformLocation(shader, "uniformAmbientIntensity"), ambientIntensity);
-    glUniform1f(glGetUniformLocation(shader, "uniformSpecularIntensity"), specularIntensity);
-    glUniform1f(glGetUniformLocation(shader, "uniformSpecularPower"), specularPower);
-
-    glUniform1f(glGetUniformLocation(shader,"spotlightCutoff"),glm::cos(glm::radians(spotlightCutoff)));
-    glUniform1f(glGetUniformLocation(shader,"spotlightOuterAngle"), glm::cos(glm::radians(spotlightOuterAngle)));
-
-    // Sphere MODEL
+    if (glfwGetKey(pWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
-        glm::mat4 modelTransform = glm::mat4(1.0f);
-        modelTransform = glm::scale(modelTransform, glm::vec3(1.00f, 1.00f, 1.00f));
-        modelTransform = glm::translate(modelTransform, glm::vec3(0.0f,3.0f, 0.0f));
-        modelTransform = glm::rotate(modelTransform, glm::radians((float) 145.0f), glm::vec3(1.0f,0.0f,0.0f));
-        modelTransform = glm::rotate(modelTransform, glm::radians((float) currentTime * 90), glm::vec3(0.0f,0.0f,1.0f));
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+        // clear the whole frame
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
-        glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
-                        1, GL_FALSE, glm::value_ptr(modelTransform));
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, iceCreamTexture[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, iceCreamTexture[1]);
+        // using our shader program...
+        glUseProgram(shader);
+
+        // ... set up the projection matrix...
+        glm::mat4 projectionTransform;
+        projectionTransform = glm::perspective(glm::radians(45.0f),                   // fov
+                                            (float) WINDOW_WIDTH / WINDOW_HEIGHT,  // aspect ratio
+                                            0.1f,                                  // near plane
+                                            100.0f);                               // far plane
+        glUniformMatrix4fv(glGetUniformLocation(shader, "projectionTransform"),
+                        1, GL_FALSE, glm::value_ptr(projectionTransform));
+
+        // ... set up the view matrix...
+        glm::mat4 viewTransform;
+        viewTransform = glm::lookAt(cameraPosition,                // eye position
+                                    glm::vec3(0.0f, 0.0f, 0.0f),   // center position
+                                    glm::vec3(0.0f, 1.0f, 0.0f));  // up vector
+        glUniformMatrix4fv(glGetUniformLocation(shader, "viewTransform"),
+                        1, GL_FALSE, glm::value_ptr(viewTransform));
         
-        glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 1500, GL_UNSIGNED_INT, planeIndices);
-        glDrawArrays(GL_TRIANGLE_FAN, 209, 11);
+        // ... set up the light position...
+        glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
+                    1, glm::value_ptr(lightPosition));
+
+        glUniform1f(glGetUniformLocation(shader, "uniformAmbientIntensity"), ambientIntensity);
+        glUniform1f(glGetUniformLocation(shader, "uniformSpecularIntensity"), specularIntensity);
+        glUniform1f(glGetUniformLocation(shader, "uniformSpecularPower"), specularPower);
+
+        glUniform1f(glGetUniformLocation(shader,"spotlightCutoff"),glm::cos(glm::radians(spotlightCutoff)));
+        glUniform1f(glGetUniformLocation(shader,"spotlightOuterAngle"), glm::cos(glm::radians(spotlightOuterAngle)));
+
+        // Sphere MODEL
+        {
+            glm::mat4 modelTransform = glm::mat4(1.0f);
+            modelTransform = glm::scale(modelTransform, glm::vec3(1.00f, 1.00f, 1.00f));
+            modelTransform = glm::translate(modelTransform, glm::vec3(0.0f,3.0f, 0.0f));
+            modelTransform = glm::rotate(modelTransform, glm::radians((float) 90.0f), glm::vec3(1.0f,0.0f,0.0f));
+            modelTransform = glm::rotate(modelTransform, glm::radians((float) currentTime * 90), glm::vec3(0.0f,0.0f,1.0f));
+
+            glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
+                            1, GL_FALSE, glm::value_ptr(modelTransform));
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, iceCreamTexture[0]);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, iceCreamTexture[1]);
+            
+            glBindVertexArray(vao);
+            glDrawElements(GL_TRIANGLES, 1500, GL_UNSIGNED_INT, planeIndices);
+            glDrawArrays(GL_TRIANGLE_FAN, 209, 11);
+        }
+    
+        {
+            glBindVertexArray(vao3);
+            glm::mat4 modelTransform = glm::mat4(1.0f);
+            modelTransform = glm::scale(modelTransform, glm::vec3(0.9f, 0.9f, 0.9f));
+            modelTransform = glm::translate(modelTransform, glm::vec3(0.0f,3.0f, 0.0f));
+            modelTransform = glm::rotate(modelTransform, glm::radians((float) 90.0f), glm::vec3(1.0f,0.0f,0.0f));
+            modelTransform = glm::rotate(modelTransform, glm::radians((float) currentTime * 90), glm::vec3(0.0f,0.0f,1.0f));
+
+            glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
+                            1, GL_FALSE, glm::value_ptr(modelTransform));
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture[0]);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, texture[1]);
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 102);
+        }
+
+        {
+            glm::mat4 planeTransform = glm::mat4(1.0f);
+            planeTransform = glm::translate(planeTransform, glm::vec3(0.0f,-15.0f, 0.0f));
+            planeTransform = glm::scale(planeTransform, glm::vec3(5.0f, 0.0f,5.0f));
+            glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
+                            1, GL_FALSE, glm::value_ptr(planeTransform));
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texturePlane[0]);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, texturePlane[1]);
+
+            glBindVertexArray(vao2);
+            glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));
+        }
+    
+        renderFbo();
     }
-   
+    else
     {
-        glBindVertexArray(vao3);
-        glm::mat4 modelTransform = glm::mat4(1.0f);
-        modelTransform = glm::scale(modelTransform, glm::vec3(0.9f, 0.9f, 0.9f));
-        modelTransform = glm::translate(modelTransform, glm::vec3(0.0f,3.0f, 0.0f));
-        modelTransform = glm::rotate(modelTransform, glm::radians((float) 145.0f), glm::vec3(1.0f,0.0f,0.0f));
-        modelTransform = glm::rotate(modelTransform, glm::radians((float) currentTime * 90), glm::vec3(0.0f,0.0f,1.0f));
+        //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+        // clear the whole frame
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
-        glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
-                        1, GL_FALSE, glm::value_ptr(modelTransform));
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture[1]);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 102);
+        // using our shader program...
+        glUseProgram(shader);
+
+        // ... set up the projection matrix...
+        glm::mat4 projectionTransform;
+        projectionTransform = glm::perspective(glm::radians(45.0f),                   // fov
+                                            (float) WINDOW_WIDTH / WINDOW_HEIGHT,  // aspect ratio
+                                            0.1f,                                  // near plane
+                                            100.0f);                               // far plane
+        glUniformMatrix4fv(glGetUniformLocation(shader, "projectionTransform"),
+                        1, GL_FALSE, glm::value_ptr(projectionTransform));
+
+        // ... set up the view matrix...
+        glm::mat4 viewTransform;
+        viewTransform = glm::lookAt(cameraPosition,                // eye position
+                                    glm::vec3(0.0f, 0.0f, 0.0f),   // center position
+                                    glm::vec3(0.0f, 1.0f, 0.0f));  // up vector
+        glUniformMatrix4fv(glGetUniformLocation(shader, "viewTransform"),
+                        1, GL_FALSE, glm::value_ptr(viewTransform));
+        
+        // ... set up the light position...
+        glUniform3fv(glGetUniformLocation(shader, "lightPosition"),
+                    1, glm::value_ptr(lightPosition));
+
+        glUniform1f(glGetUniformLocation(shader, "uniformAmbientIntensity"), ambientIntensity);
+        glUniform1f(glGetUniformLocation(shader, "uniformSpecularIntensity"), specularIntensity);
+        glUniform1f(glGetUniformLocation(shader, "uniformSpecularPower"), specularPower);
+
+        glUniform1f(glGetUniformLocation(shader,"spotlightCutoff"),glm::cos(glm::radians(spotlightCutoff)));
+        glUniform1f(glGetUniformLocation(shader,"spotlightOuterAngle"), glm::cos(glm::radians(spotlightOuterAngle)));
+
+        // Sphere MODEL
+        {
+            glm::mat4 modelTransform = glm::mat4(1.0f);
+            modelTransform = glm::scale(modelTransform, glm::vec3(1.00f, 1.00f, 1.00f));
+            modelTransform = glm::translate(modelTransform, glm::vec3(0.0f,3.0f, 0.0f));
+            modelTransform = glm::rotate(modelTransform, glm::radians((float) 90.0f), glm::vec3(1.0f,0.0f,0.0f));
+            modelTransform = glm::rotate(modelTransform, glm::radians((float) currentTime * 90), glm::vec3(0.0f,0.0f,1.0f));
+
+            glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
+                            1, GL_FALSE, glm::value_ptr(modelTransform));
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, iceCreamTexture[0]);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, iceCreamTexture[1]);
+            
+            glBindVertexArray(vao);
+            glDrawElements(GL_TRIANGLES, 1500, GL_UNSIGNED_INT, planeIndices);
+            glDrawArrays(GL_TRIANGLE_FAN, 209, 11);
+        }
+    
+        {
+            glBindVertexArray(vao3);
+            glm::mat4 modelTransform = glm::mat4(1.0f);
+            modelTransform = glm::scale(modelTransform, glm::vec3(0.9f, 0.9f, 0.9f));
+            modelTransform = glm::translate(modelTransform, glm::vec3(0.0f,3.0f, 0.0f));
+            modelTransform = glm::rotate(modelTransform, glm::radians((float) 90.0f), glm::vec3(1.0f,0.0f,0.0f));
+            modelTransform = glm::rotate(modelTransform, glm::radians((float) currentTime * 90), glm::vec3(0.0f,0.0f,1.0f));
+
+            glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
+                            1, GL_FALSE, glm::value_ptr(modelTransform));
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture[0]);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, texture[1]);
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 102);
+        }
+
+        {
+            glm::mat4 planeTransform = glm::mat4(1.0f);
+            planeTransform = glm::translate(planeTransform, glm::vec3(0.0f,-15.0f, 0.0f));
+            planeTransform = glm::scale(planeTransform, glm::vec3(5.0f, 0.0f,5.0f));
+            glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
+                            1, GL_FALSE, glm::value_ptr(planeTransform));
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texturePlane[0]);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, texturePlane[1]);
+
+            glBindVertexArray(vao2);
+            glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));
+        }
     }
 
-    {
-        glm::mat4 planeTransform = glm::mat4(1.0f);
-        planeTransform = glm::translate(planeTransform, glm::vec3(0.0f,-5.0f, 0.0f));
-        planeTransform = glm::scale(planeTransform, glm::vec3(1.5f, 0.0f,1.5f));
-        glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
-                        1, GL_FALSE, glm::value_ptr(planeTransform));
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texturePlane[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texturePlane[1]);
-
-        glBindVertexArray(vao2);
-        glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));
-        glBindVertexArray(vao2);
-    }
     
     
-    
-    /*for (int i = 0; i < 2; i++)
+    /*if (glfwGetKey(pWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
-        glDrawArrays(GL_LINE_LOOP, i * 10, 10);
+        grayscale = !grayscale;
+        if (grayscale)
+            renderFbo(); // render to FBO if enabled
+        else
+            glBindFramebuffer(GL_FRAMEBUFFER, 0); // bind default framebuffer if disabled
     }*/
 }
 
