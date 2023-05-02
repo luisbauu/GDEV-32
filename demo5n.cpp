@@ -1219,7 +1219,7 @@ struct polar
 // variables for tracking camera and light position
 polar camera;
 glm::vec3 lightPosition = glm::vec3(0.0f, 10.0f, 0.0f);
-
+glm::vec3 lightFocus; 
 float spotlightCutoff = 75.0f;
 float spotlightOuterAngle = 200.0f;
 
@@ -1284,14 +1284,15 @@ glm::mat4 renderShadowMap()
     // (note that if you use a spot light, the FOV and the center position
     // vector should be set to your spotlight's outer radius and focus point,
     // respectively)
+
     glm::mat4 lightTransform;
     lightTransform = glm::perspective(glm::radians(200.0f),       // fov
                                       1.0f,                      // aspect ratio
                                       0.1f,                      // near plane
                                       100.0f);                   // far plane
     lightTransform *= glm::lookAt(lightPosition,                 // eye position
-                                  glm::vec3(0.0f, 0.0f, 0.0f),   // center position
-                                  glm::vec3(1.0f, 0.0f, 0.0f));  // up vector
+                                  glm::vec3(lightPosition - (0.0f, -12.0f, 0.0f)),   // center position
+                                  glm::vec3(10.0f, 0.0f, 0.0f));  // up vector
     glUniformMatrix4fv(glGetUniformLocation(shadowMapShader, "lightTransform"),
                        1, GL_FALSE, glm::value_ptr(lightTransform));
 
@@ -1469,14 +1470,15 @@ void render()
         spotlightOuterAngle -= 0.1f;
 
     glm::mat4 lightTransform = renderShadowMap();
-
     // ... set up the light transformation (for looking up the shadow map)...
     glUniformMatrix4fv(glGetUniformLocation(shader, "lightTransform"),
                     1, GL_FALSE, glm::value_ptr(lightTransform));
     // ... set the active texture...
-    glActiveTexture(GL_TEXTURE0);
+    /*glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture[0]);
     glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture[0]);*/
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
     glUniform1i(glGetUniformLocation(shader, "diffuseMap"), 0);
     glUniform1i(glGetUniformLocation(shader, "shadowMap"),  1);
@@ -1561,8 +1563,8 @@ void render()
 
         {
             glm::mat4 planeTransform = glm::mat4(1.0f);
-            planeTransform = glm::translate(planeTransform, glm::vec3(0.0f,-15.0f, 0.0f));
-            planeTransform = glm::scale(planeTransform, glm::vec3(5.0f, 0.0f,5.0f));
+            planeTransform = glm::translate(planeTransform, glm::vec3(0.0f,-12.0f, 0.0f));
+            planeTransform = glm::scale(planeTransform, glm::vec3(10.0f, 0.0f,10.0f));
             glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
                             1, GL_FALSE, glm::value_ptr(planeTransform));
             glActiveTexture(GL_TEXTURE0);
@@ -1655,8 +1657,8 @@ void render()
 
         {
             glm::mat4 planeTransform = glm::mat4(1.0f);
-            planeTransform = glm::translate(planeTransform, glm::vec3(0.0f,-15.0f, 0.0f));
-            planeTransform = glm::scale(planeTransform, glm::vec3(5.0f, 0.0f,5.0f));
+            planeTransform = glm::translate(planeTransform, glm::vec3(0.0f,-12.0f, 0.0f));
+            planeTransform = glm::scale(planeTransform, glm::vec3(10.0f, 0.0f,10.0f));
             glUniformMatrix4fv(glGetUniformLocation(shader, "modelTransform"),
                             1, GL_FALSE, glm::value_ptr(planeTransform));
             glActiveTexture(GL_TEXTURE0);
@@ -1668,6 +1670,19 @@ void render()
             glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));
         }
     }
+
+    /*
+    // ... set up the light transformation (for looking up the shadow map)...
+    glUniformMatrix4fv(glGetUniformLocation(shader, "lightTransform"),
+                    1, GL_FALSE, glm::value_ptr(lightTransform));
+    // ... set the active texture...
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texturePlane[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
+    glUniform1i(glGetUniformLocation(shader, "diffuseMap"), 0);
+    glUniform1i(glGetUniformLocation(shader, "shadowMap"),  1);
+    */
 }
 
 /*****************************************************************************/
