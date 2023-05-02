@@ -82,5 +82,11 @@ void main()
     if (inShadow())
         lightDiffuse = lightSpecular = vec3(0.0f, 0.0f, 0.0f);
     
-    fragmentColor = vec4((lightAmbient + lightDiffuse + lightSpecular), 1.0f) * texture(diffuseMap, shaderTexCoord);
+    if (theta > spotlightCutoff)
+    {
+        fragmentColor = vec4((lightAmbient + lightDiffuse + lightSpecular), 1.0f) * texture(diffuseMap, shaderTexCoord);
+    }
+    else{
+        fragmentColor = vec4((lightAmbient), 1.0f) * texture(diffuseMap, shaderTexCoord);
+    }
 }
