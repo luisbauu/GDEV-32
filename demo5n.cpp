@@ -100,6 +100,7 @@ float vertices[] =
 // OpenGL object IDs
 GLuint vao, vao2, vao3;
 GLuint vbo, vbo2, vbo3;
+GLuint ebo;
 GLuint shader, frameshader;
 GLuint texture[2], texturePlane[2], iceCreamTexture[2];
 
@@ -1284,13 +1285,13 @@ glm::mat4 renderShadowMap()
     // vector should be set to your spotlight's outer radius and focus point,
     // respectively)
     glm::mat4 lightTransform;
-    lightTransform = glm::perspective(glm::radians(75.0f),       // fov
+    lightTransform = glm::perspective(glm::radians(200.0f),       // fov
                                       1.0f,                      // aspect ratio
                                       0.1f,                      // near plane
                                       100.0f);                   // far plane
     lightTransform *= glm::lookAt(lightPosition,                 // eye position
                                   glm::vec3(0.0f, 0.0f, 0.0f),   // center position
-                                  glm::vec3(0.0f, 1.0f, 0.0f));  // up vector
+                                  glm::vec3(1.0f, 0.0f, 0.0f));  // up vector
     glUniformMatrix4fv(glGetUniformLocation(shadowMapShader, "lightTransform"),
                        1, GL_FALSE, glm::value_ptr(lightTransform));
 
@@ -1360,6 +1361,10 @@ bool setup()
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
+
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), planeIndices, GL_STATIC_DRAW);
 
     // load our shader program
     shader = gdevLoadShader("demo5n.vs", "demo5n.fs");
@@ -1663,7 +1668,6 @@ void render()
             glDrawArrays(GL_TRIANGLES, 0, sizeof(planeVertices) / (8 * sizeof(float)));
         }
     }
-
 }
 
 /*****************************************************************************/
@@ -1737,7 +1741,7 @@ int main(int argc, char** argv)
             glfwPollEvents();
         }
     }
-
+    
     // gracefully terminate the program
     glfwTerminate();
     return 0;
