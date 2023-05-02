@@ -1078,20 +1078,7 @@ GLuint planeIndices[] =
     198,219,209,
 };
 
-float rectangleVertices[] =
-{
-	// Coords    // texCoords
-	 1.0f, -1.0f,  1.0f, 0.0f,
-	-1.0f, -1.0f,  0.0f, 0.0f,
-	-1.0f,  1.0f,  0.0f, 1.0f,
-
-	 1.0f,  1.0f,  1.0f, 1.0f,
-	 1.0f, -1.0f,  1.0f, 0.0f,
-	-1.0f,  1.0f,  0.0f, 1.0f
-};
-
 // CUSTOM FRAMEBUFFER CODE
-
 float screenQuadVertices[] =   // vertices for a fullscreen quadrilateral
 {
     // position   texcoords
@@ -1493,19 +1480,6 @@ void render()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-        /*glm::mat4 lightTransform = renderShadowMap();
-
-        // ... set up the light transformation (for looking up the shadow map)...
-        glUniformMatrix4fv(glGetUniformLocation(shader, "lightTransform"),
-                        1, GL_FALSE, glm::value_ptr(lightTransform));
-        // ... set the active texture...
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
-        glUniform1i(glGetUniformLocation(shader, "diffuseMap"), 0);
-        glUniform1i(glGetUniformLocation(shader, "shadowMap"),  1);*/
 
         // clear the whole frame
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
